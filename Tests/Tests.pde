@@ -5,6 +5,12 @@ import java.util.Date;
 
 File chemin;
 NetcdfFile fichierNetcdf;
+IndexMeteoFrance indexMeteoFrance;
+volatile String message;
+final int CHARGEMENT_INDEX = 0;
+int etape = 0;
+boolean change = false;
+File cheminResume; 
 
 class CoordonneeGrille {
   int lat;
@@ -98,20 +104,64 @@ Date getDate(Variable varTime, int iDate) throws IOException {
 }
 
 void setup() {
-  size(400,100);
+  size(400,200);
   background(#ffffff);
   frameRate(30);
+  fill(#000000);
+  thread("chargerIndexMeteoFrance");
+}
+
+void draw() {
+  background(#ffffff);
+  textSize(15);
+  text(message, 10, 15);
+}
+
+void chargerIndexMeteoFrance() {
+  message = "Chargement de l'index de Météo-France...";
+  try {
+    indexMeteoFrance = new IndexMeteoFrance(loadJSONArray("https://donneespubliques.meteofrance.fr/donnees_libres/Static/CacheDCPC_NWP.json"));
+    String[][] modeles = new String[][]{{"AROME", "0.01"}, {"ARPEGE", "0.1"}};
+    for(String[] nomModele : modeles) {
+      Modele modele = indexMeteoFrance.getModele(nomModele[0], nomModele[1]);
+      for(Pack pack : modele.getPacks()) {
+        for(Echeance echeance : pack.getEcheances()) {
+          println(echeance.getNomFichier() + " " + echeance.getUrlTelechargement());
+        }
+      }
+    }
+  } catch (Exception ex) {
+    ex.printStackTrace();
+    indexMeteoFrance = null;
+  }
+  message = "";
   selectInput("Sélectionnez un fichier GRIB2", "ouvrirGrib");
 }
 
-void ouvrirGrib(File fichier) throws IOException {
+void ouvrirGrib(File fichier) {
+  if(fichier == null)
+    return;
   chemin = fichier;
-  fichierNetcdf = NetcdfFile.open(fichier.getPath());
+  thread("chargerFichierNetcdf");
+}
+
+void chargerFichierNetcdf() throws IOException {
+  message = "Chargement du fichier GRIB...";
+  fichierNetcdf = NetcdfFile.open(chemin.getPath());
+  message = "";
   selectOutput("Sélectionnez un fichier où stocker le résumé des variables", "ecrireResume");
 }
 
-void ecrireResume(File fichier) throws IOException {
-  PrintWriter output = createWriter(fichier);
+void ecrireResume(File fichier) {
+  if(fichier == null)
+    return;
+  cheminResume = fichier;
+  thread("ecrireResume");
+}
+
+void ecrireResume() throws IOException {
+  message = "Ecriture du résumé...";
+  PrintWriter output = createWriter(cheminResume);
   output.println("MàJ automatique : https://donneespubliques.meteofrance.fr/donnees_libres/Static/CacheDCPC_NWP.json");
   output.println("URL de téléchargement : http://dcpc-nwp.meteo.fr/services/PS_GetCache_DCPCPreviNum?token=__5yLVTdr-sGeHoPitnFc7TZ6MhBcJxuSsoZp6y0leVHU__&model={modele}&grid={grid}&package={SP1/SP2}&time={time}&referencetime={date du run}&format=grib2");
   output.println("Fichier " + chemin.getName() + "\n");
@@ -172,4 +222,6 @@ void ecrireResume(File fichier) throws IOException {
   }
   output.flush();
   output.close();
+  
+  message = "";
 }
