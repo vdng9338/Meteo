@@ -57,14 +57,18 @@ public class Echeance implements Comparable<Echeance> {
   }
   
   public void telechargerSiNecessaire() {
-    File fic = new File(getNomFichier());
+    File fic = new File(dataPath(getNomFichier()));
     if(!fic.exists()) {
+      System.out.println(fic.getAbsolutePath() + " n'existe pas");
       for(int essai = 0; essai < echeance_nbEssais; essai++) {
         try {
           saveBytes(getNomFichier(), loadBytes(getUrlTelechargement()));
           break;
         } catch (Exception ex) {
-          System.err.println("Erreur en téléchargeant " + getNomFichier() + ", essai " + essai + "/" + echeance_nbEssais);
+          System.err.println("Erreur en téléchargeant " + getNomFichier() + ", essai " + (essai+1) + "/" + echeance_nbEssais);
+          try {
+            Thread.sleep(1000);
+          } catch (Exception ex2) {}
           ex.printStackTrace();
         }
       }
