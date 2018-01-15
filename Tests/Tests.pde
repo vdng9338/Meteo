@@ -130,6 +130,9 @@ void chargerIndexMeteoFrance() {
         }
       }
     }
+    Echeance arpege = indexMeteoFrance.getModele("ARPEGE", "0.1").getPack("SP1").getEcheances().get(0);
+    message = "Téléchargement de " + arpege.getNomFichier();
+    arpege.telechargerSiNecessaire();
   } catch (Exception ex) {
     ex.printStackTrace();
     indexMeteoFrance = null;
