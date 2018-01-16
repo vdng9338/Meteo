@@ -120,7 +120,7 @@ public class Modele {
     this.format = obj.getString("format");
     JSONArray packsJson = obj.getJSONArray("refPacks");
     for(int i = 0; i < packsJson.size(); i++)
-      packs.add(new Pack((JSONObject) packsJson.get(i), this));
+      packs.add(new Pack((JSONObject) packsJson.getJSONObject(i), this));
   }
   
   public String getNom() {
