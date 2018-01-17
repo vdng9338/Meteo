@@ -30,7 +30,29 @@ int indexDate(Variable varTime, Date dateRecherche) throws IOException {
   return -1;
 }
 
-float getInformationFloat(float lat, float lon, Date date, String nom, boolean inclureAltitude) throws IOException {
+
+
+int indexDateFinIntervalle(Variable varTimeBounds, Variable varTime, Date dateRecherche) throws IOException {
+  DateUnit unit = DateUnit.factory(varTime.getUnitsString());
+  Array refs = varTime.read();
+  Array bounds = varTimeBounds.read();
+  for(int i = 0; i < refs.getSize(); i++) {
+    double reference = refs.getDouble(i);
+    Index indexBounds = bounds.getIndex();
+    indexBounds.set0(i);
+    indexBounds.set1(0);
+    double coord1 = bounds.getDouble(indexBounds);
+    indexBounds.set1(1);
+    double coord2 = bounds.getDouble(indexBounds);
+    double heure = reference + (coord2 - coord1);
+    Date dateCorresp = unit.makeDate(heure);
+    if(dateRecherche.equals(dateCorresp))
+      return i;
+  }
+  return -1;
+}
+
+float getInformationFloat(float lat, float lon, Date date, String nom) throws IOException {
   CoordonneeGrille index = chercherIndexPlusProche(lat, lon, fichierNetcdf);
   Variable var = fichierNetcdf.findVariable(nom);
   if(var != null) {
@@ -38,7 +60,7 @@ float getInformationFloat(float lat, float lon, Date date, String nom, boolean i
     Variable varTime = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());
     Array tab = var.read();
     Index indexTemp = tab.getIndex();
-    if(inclureAltitude) {
+    if(nom.contains("height_above_ground")) {
       indexTemp.set1(0);
       indexTemp.set2(index.getLat());
       indexTemp.set3(index.getLon());
@@ -55,12 +77,73 @@ float getInformationFloat(float lat, float lon, Date date, String nom, boolean i
   return ZERO_ABSOLU_CELSIUS;
 }
 
+float getInformationIntervalle(float lat, float lon, Date depuis, Date jusqua, String nom) throws IOException {
+  CoordonneeGrille index = chercherIndexPlusProche(lat, lon, fichierNetcdf);
+  Variable var = fichierNetcdf.findVariable(nom);
+  Array tab = var.read();
+  Variable varDate = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());
+  Variable varDateBounds = fichierNetcdf.findVariable(varDate.findAttribute("bounds").getStringValue());
+  int indexDateDepuis = indexDateFinIntervalle(varDateBounds, varDate, depuis);
+  int indexDateJusqua = indexDateFinIntervalle(varDateBounds, varDate, jusqua);
+  Index indexTab = tab.getIndex();
+  if(nom.contains("height_above_ground")) {
+    indexTab.set1(0);
+    indexTab.set2(index.getLat());
+    indexTab.set3(index.getLon());
+  }
+  else {
+    indexTab.set1(index.getLat());
+    indexTab.set2(index.getLon());
+  }
+  indexTab.set0(indexDateDepuis);
+  float informationDepuis = tab.getFloat(indexTab);
+  indexTab.set0(indexDateJusqua);
+  float informationJusqua = tab.getFloat(indexTab);
+  return informationJusqua - informationDepuis;
+}
+
 float getTemperatureCelsius(float lat, float lon, Date date) throws IOException {
-  float temperatureK = getInformationFloat(lat, lon, date, "Temperature_height_above_ground", true);
+  float temperatureK = getInformationFloat(lat, lon, date, "Temperature_height_above_ground");
   if(temperatureK == ZERO_ABSOLU_CELSIUS)
     return ZERO_ABSOLU_CELSIUS;
   else
     return temperatureK + ZERO_ABSOLU_CELSIUS;
+}
+
+float getPrecipitation(float lat, float lon, Date dateDepuis, Date dateJusqua) throws IOException {
+  float precipTotal = getInformationIntervalle(lat, lon, dateDepuis, dateJusqua, "Total_precipitation_rate_surface_Mixed_intervals_Accumulation");
+  return precipTotal; // Qu'est-ce que ca veut dire ???
+}
+
+float getHumiditeRelative(float lat, float lon, Date date) throws IOException {
+  float humidite = getInformationFloat(lat, lon, date, "Relative_humidity_height_above_ground");
+  return humidite;
+}
+
+// Fonte de neige ou neige tout court ?
+float getFonteNeige(float lat, float lon, Date dateDepuis, Date dateJusqua) throws IOException {
+  float fonteNeige = getInformationIntervalle(lat, lon, dateDepuis, dateJusqua, "Snow_melt_surface_Mixed_intervals_Average");
+  return fonteNeige;
+}
+
+float getNebulositeTotale(float lat, float lon, Date date) throws IOException {
+  float nebulosite = getInformationFloat(lat, lon, date, "Total_cloud_cover_surface_layer");
+  return nebulosite;
+}
+
+float getDirectionOrigineVent(float lat, float lon, Date date) throws IOException {
+  float direction = getInformationFloat(lat, lon, date, "Wind_direction_from_which_blowing_height_above_ground");
+  return direction;
+}
+
+float getVitesseVent(float lat, float lon, Date date) throws IOException {
+  float vitesse = getInformationFloat(lat, lon, date, "Wind_speed_height_above_ground");
+  return vitesse;
+}
+
+float getVitesseRafales(float lat, float lon, Date date) throws IOException {
+  float vitesse = getInformationFloat(lat, lon, date, "Wind_speed_gust_height_above_ground");
+  return vitesse;
 }
 
 void setup() {
@@ -160,6 +243,22 @@ void ecrireResume() throws IOException {
   
   output.println("\n-------------------\n");
   
+  output.println(fichierNetcdf.findVariable("time1_bounds").read());
+  output.println(fichierNetcdf.findVariable("time1").read());
+  
+  output.println("\n--------------------\n");
+  
+  Variable varPrecip = fichierNetcdf.findVariable("Total_precipitation_rate_surface_Mixed_intervals_Accumulation");
+  Array ar = varPrecip.read();
+  Variable varTime = fichierNetcdf.findVariable("time");
+  Array ar2 = varTime.read();
+  for(int i = 0; i < ar2.getSize(); i++) {
+    Index ind = ar.getIndex();
+    ind.set0(i);
+    ind.set1(indexNantes.getLat());
+    ind.set2(indexNantes.getLon());
+    output.println(ar.getFloat(ind));
+  }
   
   
   
