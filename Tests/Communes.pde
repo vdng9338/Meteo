@@ -1,0 +1,1 @@
+final String FICHIER_COMMUNES = "eucircos_regions_departements_circonscriptions_communes_gps.csv";
