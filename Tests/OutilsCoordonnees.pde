@@ -1,3 +1,11 @@
+/**
+ * Classes et fonctions qui gèrent la conversion de coordonnées géographiques en coordonnées de grille.
+ */
+
+
+/**
+ * Stocke une coordonnée de la grille et les coordonnées géographiques correspondant exactement à la case.
+ */
 class CoordonneeGrille {
   int lat;
   int lon;
@@ -28,6 +36,10 @@ class CoordonneeGrille {
   }
 }
 
+/**
+ * Recherche dichotomique d'une latitude, dans un tableau (ar) classé par latitude décroissante.
+ * C'est en gros un jeu de "plus ou moins", en coupant à chaque fois le tableau en 2.
+ */
 int indexRechercheDichotomieLatitude(Array ar, int debut, int finExcl, double valeur) { // Latitudes décroissantes, longitudes croissantes
   if(debut == finExcl || (debut == finExcl-1 && finExcl == ar.getSize())) {
     return debut;
@@ -51,6 +63,10 @@ int indexRechercheDichotomieLatitude(Array ar, int debut, int finExcl, double va
     return indexRechercheDichotomieLatitude(ar, milieu, finExcl, valeur);
 }
 
+/**
+ * Recherche dichotomique d'une longitude, dans un tableau (ar) classé par longitude croissante.
+ * C'est en gros un jeu de "plus ou moins", en coupant à chaque fois le tableau en 2.
+ */
 int indexRechercheDichotomieLongitude(Array ar, int debut, int finExcl, double valeur) { // Latitudes décroissantes, longitudes croissantes
   if(debut == finExcl || (debut == finExcl-1 && finExcl == ar.getSize())) {
     return debut;
@@ -74,6 +90,9 @@ int indexRechercheDichotomieLongitude(Array ar, int debut, int finExcl, double v
     return indexRechercheDichotomieLongitude(ar, debut, milieu, valeur);
 }
 
+/**
+ * Cherche les coordonnées de la grille les plus proches des coordonnées géographiques passées en paramètre.
+ */
 CoordonneeGrille chercherIndexPlusProche(double lat, double lon, NetcdfFile fichier) throws IOException {
   if(lon < 180) // Les longitudes vont de 180 à 540, a priori, sur tous les modèles 
     lon = lon + 360;

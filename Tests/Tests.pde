@@ -3,21 +3,32 @@ import ucar.nc2.Variable;
 import ucar.ma2.Index;
 import java.util.Date;
 
+/**
+ * Le zéro absolu (0K) est de -273.15 C. Sert aussi de valeur non définie en float. (à séparer ?)
+ */
 final float ZERO_ABSOLU_CELSIUS = -273.15;
 
+// Le chemin du fichier GRIB sélectionné.
 File chemin;
+// Le fichier GRIB en lui-même.
 NetcdfFile fichierNetcdf;
+// L'index des fichiers disponibles chez Météo-France.
 IndexMeteoFrance indexMeteoFrance;
+// Un message à afficher.
 volatile String message;
+
 int etape = 0;
-boolean change = false;
+// Le chemin d'enregistrement d'un résumé.
 File cheminResume; 
 
+
+// Récupère la (iDate+1)-ième date de la variable passée en paramètre sous la forme d'une Date Java.
 Date getDate(Variable varTime, int iDate) throws IOException {
   DateUnit unit = DateUnit.factory(varTime.getUnitsString());
   return unit.makeDate(varTime.read().getDouble(iDate));
 }
 
+// Donne l'index d'une certaine date (exacte à la milliseconde près) dans la variable passée en paramètre.
 int indexDate(Variable varTime, Date dateRecherche) throws IOException {
   DateUnit unit = DateUnit.factory(varTime.getUnitsString());
   Array tab = varTime.read();
@@ -31,7 +42,7 @@ int indexDate(Variable varTime, Date dateRecherche) throws IOException {
 }
 
 
-
+// TODO : Très confus... Censé retourner l'index de l'intervalle dont la fin est dateRecherche.
 int indexDateFinIntervalle(Variable varTimeBounds, Variable varTime, Date dateRecherche) throws IOException {
   DateUnit unit = DateUnit.factory(varTime.getUnitsString());
   Array refs = varTime.read();
@@ -52,6 +63,7 @@ int indexDateFinIntervalle(Variable varTimeBounds, Variable varTime, Date dateRe
   return -1;
 }
 
+// Fonction générique qui retourne une information float avec les paramètres donnés.
 float getInformationFloat(float lat, float lon, Date date, String nom) throws IOException {
   CoordonneeGrille index = chercherIndexPlusProche(lat, lon, fichierNetcdf);
   Variable var = fichierNetcdf.findVariable(nom);
@@ -77,6 +89,7 @@ float getInformationFloat(float lat, float lon, Date date, String nom) throws IO
   return ZERO_ABSOLU_CELSIUS;
 }
 
+// TODO : Extrêmement confus. Retourne une information qui porte sur un intervalle (précipitations ou neige).
 float getInformationIntervalle(float lat, float lon, Date depuis, Date jusqua, String nom) throws IOException {
   CoordonneeGrille index = chercherIndexPlusProche(lat, lon, fichierNetcdf);
   Variable var = fichierNetcdf.findVariable(nom);
@@ -101,6 +114,8 @@ float getInformationIntervalle(float lat, float lon, Date depuis, Date jusqua, S
   float informationJusqua = tab.getFloat(indexTab);
   return informationJusqua - informationDepuis;
 }
+
+// Les fonctions suivantes douvent être assez claires.
 
 float getTemperatureCelsius(float lat, float lon, Date date) throws IOException {
   float temperatureK = getInformationFloat(lat, lon, date, "Temperature_height_above_ground");
@@ -151,7 +166,7 @@ void setup() {
   background(#ffffff);
   frameRate(30);
   fill(#000000);
-  thread("chargerIndexMeteoFrance");
+  thread("chargerIndexMeteoFrance"); // permet de laisser l'application répondre pendant que l'index est téléchargé
 }
 
 void draw() {
@@ -173,7 +188,7 @@ void chargerIndexMeteoFrance() {
         }
       }
     }
-    Echeance arpege = indexMeteoFrance.getModele("ARPEGE", "0.1").getPack("SP1").getEcheances().get(0);
+    Echeance arpege = indexMeteoFrance.getModele("ARPEGE", "0.1").getPack("SP1").getEcheances().get(0); // Téléchargement de ARPEGE SP1
     message = "Téléchargement de " + arpege.getNomFichier();
     arpege.telechargerSiNecessaire();
   } catch (Exception ex) {
@@ -205,14 +220,19 @@ void ecrireResume(File fichier) {
   thread("ecrireResume");
 }
 
+
+// En fait, un véritable fourre-tout de tests et d'affichages.
 void ecrireResume() throws IOException {
   message = "Ecriture du résumé...";
   PrintWriter output = createWriter(cheminResume);
+
+  // Quelques messages systématiques
   output.println("MàJ automatique : https://donneespubliques.meteofrance.fr/donnees_libres/Static/CacheDCPC_NWP.json");
   output.println("URL de téléchargement : http://dcpc-nwp.meteo.fr/services/PS_GetCache_DCPCPreviNum?token=__5yLVTdr-sGeHoPitnFc7TZ6MhBcJxuSsoZp6y0leVHU__&model={modele}&grid={grid}&package={SP1/SP2}&time={time}&referencetime={date du run}&format=grib2");
   output.println("Fichier " + chemin.getName() + "\n");
+
   for(Variable var : fichierNetcdf.getVariables())
-    output.println(var);
+    output.println(var); // Affiche le type, le nom, les dimensions et les attributs de chaque variable
   output.println("\n---------------------\n");
   
   
@@ -229,6 +249,7 @@ void ecrireResume() throws IOException {
     ex.printStackTrace();
   }
   
+  // Affichage de toutes les températures disponibles dans le fichier à Nantes
   Variable varTemp = fichierNetcdf.findVariable("Temperature_height_above_ground");
   if(varTemp != null) {
     // Dimensions : time/time1, height_above_ground, lat, lon
@@ -248,6 +269,7 @@ void ecrireResume() throws IOException {
   
   output.println("\n--------------------\n");
   
+  // J'essaye de comprendre comment fonctionnent les précipitations... Et les noms de variable changent
   Variable varPrecip = fichierNetcdf.findVariable("Total_precipitation_rate_surface_Mixed_intervals_Accumulation");
   Array ar = varPrecip.read();
   Variable varTime = fichierNetcdf.findVariable("time");
@@ -265,5 +287,6 @@ void ecrireResume() throws IOException {
   output.flush();
   output.close();
   
+  // On a fini !
   message = "";
 }
