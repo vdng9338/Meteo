@@ -166,13 +166,20 @@ void setup() {
   background(#ffffff);
   frameRate(30);
   fill(#000000);
-  thread("chargerIndexMeteoFrance"); // permet de laisser l'application répondre pendant que l'index est téléchargé
+  thread("chargerTableCommunesThread"); // permet de laisser l'application répondre pendant que l'index est téléchargé
 }
 
 void draw() {
   background(#ffffff);
   textSize(15);
   text(message, 10, 15);
+}
+
+void chargerTableCommunesThread() {
+  message = "Chargement des communes...";
+  chargerTableCommunes();
+  thread("chargerIndexMeteoFrance");
+  
 }
 
 void chargerIndexMeteoFrance() {
