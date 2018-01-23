@@ -212,22 +212,25 @@ void setup() {
   thread("chargerTableCommunesThread"); // permet de laisser l'application répondre pendant que l'index est téléchargé
 }
 
+void chargement() {
+  message = "Chargement des communes...";
+  chargerTableCommunes();
+  message = "Chargement des pays...";
+  chargerTablepays();
+  message = "Chargement de l'index de Météo-France...";
+  chargerIndexMeteoFrance();
+  message = "";
+  selectInput("Sélectionnez un fichier GRIB2", "ouvrirGrib");
+}
+
 void draw() {
   background(#ffffff);
   textSize(15);
   text(message, 10, 15);
 }
 
-void chargerTableCommunesThread() {
-  message = "Chargement des communes...";
-  chargerTableCommunes();
-  thread("chargerIndexMeteoFrance");
-  
-}
-
 void chargerIndexMeteoFrance() {
-  message = "Chargement de l'index de Météo-France...";
-  /*try {
+  try {
     indexMeteoFrance = new IndexMeteoFrance(loadJSONArray("https://donneespubliques.meteofrance.fr/donnees_libres/Static/CacheDCPC_NWP.json"));
     String[][] modeles = new String[][]{{"AROME", "0.01"}, {"ARPEGE", "0.1"}};
     for(String[] nomModele : modeles) {
@@ -244,9 +247,7 @@ void chargerIndexMeteoFrance() {
   } catch (Exception ex) {
     ex.printStackTrace();
     indexMeteoFrance = null;
-  }*/
-  message = "";
-  selectInput("Sélectionnez un fichier GRIB2", "ouvrirGrib");
+  }
 }
 
 void ouvrirGrib(File fichier) {
