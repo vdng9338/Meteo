@@ -2,6 +2,7 @@ import ucar.nc2.NetcdfFile;
 import ucar.nc2.Variable;
 import ucar.ma2.Index;
 import java.util.Date;
+import java.util.TreeMap;
 
 /**
  * Le zéro absolu (0K) est de -273.15 C. Sert aussi de valeur non définie en float. (à séparer ?)
@@ -17,21 +18,37 @@ IndexMeteoFrance indexMeteoFrance;
 // Un message à afficher.
 volatile String message;
 
-int etape = 0;
 // Le chemin d'enregistrement d'un résumé.
 File cheminResume; 
+// Evite de relire les variables à chaque accès.
+TreeMap<String, Array> cacheVariables = new TreeMap<String, Array>();
 
+// Lit une variable seulement si c'est nécessaire.
+Array lireVariable(Variable var) throws IOException {
+  if(var == null)
+    return null;
+  String nom = var.getFullNameEscaped();
+  if(cacheVariables.containsKey(nom))
+    return cacheVariables.get(nom);
+  Array tab = var.read();
+  cacheVariables.put(nom, tab);
+  return tab;
+}
 
 // Récupère la (iDate+1)-ième date de la variable passée en paramètre sous la forme d'une Date Java.
 Date getDate(Variable varTime, int iDate) throws IOException {
   DateUnit unit = DateUnit.factory(varTime.getUnitsString());
-  return unit.makeDate(varTime.read().getDouble(iDate));
+  return unit.makeDate(lireVariable(varTime).getDouble(iDate));
+}
+
+Date plusUneHeure(Date date) {
+  return new Date(date.getTime() + 3600 * 1000);
 }
 
 // Donne l'index d'une certaine date (exacte à la milliseconde près) dans la variable passée en paramètre.
 int indexDate(Variable varTime, Date dateRecherche) throws IOException {
   DateUnit unit = DateUnit.factory(varTime.getUnitsString());
-  Array tab = varTime.read();
+  Array tab = lireVariable(varTime);
   for(int i = 0; i < tab.getSize(); i++) {
     double valeur = tab.getDouble(i);
     Date date = unit.makeDate(valeur);
@@ -42,20 +59,20 @@ int indexDate(Variable varTime, Date dateRecherche) throws IOException {
 }
 
 
-// TODO : Très confus... Censé retourner l'index de l'intervalle dont la fin est dateRecherche.
+// Retourne l'index de l'intervalle dont la fin est dateRecherche.
 int indexDateFinIntervalle(Variable varTimeBounds, Variable varTime, Date dateRecherche) throws IOException {
   DateUnit unit = DateUnit.factory(varTime.getUnitsString());
-  Array refs = varTime.read();
-  Array bounds = varTimeBounds.read();
+  Array refs = lireVariable(varTime);
+  Array bounds = lireVariable(varTimeBounds);
   for(int i = 0; i < refs.getSize(); i++) {
-    double reference = refs.getDouble(i);
+    double reference = /*refs.getDouble(i)*/ 0; // à quoi sert le time ?
     Index indexBounds = bounds.getIndex();
     indexBounds.set0(i);
     indexBounds.set1(0);
     double coord1 = bounds.getDouble(indexBounds);
     indexBounds.set1(1);
     double coord2 = bounds.getDouble(indexBounds);
-    double heure = reference + (coord2 - coord1);
+    double heure = reference + Math.abs(coord2 - coord1);
     Date dateCorresp = unit.makeDate(heure);
     if(dateRecherche.equals(dateCorresp))
       return i;
@@ -70,7 +87,7 @@ float getInformationFloat(float lat, float lon, Date date, String nom) throws IO
   if(var != null) {
     // Dimensions : time/time1, (height_above_ground/1,) lat, lon
     Variable varTime = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());
-    Array tab = var.read();
+    Array tab = lireVariable(var);
     Index indexTemp = tab.getIndex();
     if(nom.contains("height_above_ground")) {
       indexTemp.set1(0);
@@ -93,7 +110,7 @@ float getInformationFloat(float lat, float lon, Date date, String nom) throws IO
 float getInformationIntervalle(float lat, float lon, Date depuis, Date jusqua, String nom) throws IOException {
   CoordonneeGrille index = chercherIndexPlusProche(lat, lon, fichierNetcdf);
   Variable var = fichierNetcdf.findVariable(nom);
-  Array tab = var.read();
+  Array tab = lireVariable(var);
   Variable varDate = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());
   Variable varDateBounds = fichierNetcdf.findVariable(varDate.findAttribute("bounds").getStringValue());
   int indexDateDepuis = indexDateFinIntervalle(varDateBounds, varDate, depuis);
@@ -113,6 +130,32 @@ float getInformationIntervalle(float lat, float lon, Date depuis, Date jusqua, S
   indexTab.set0(indexDateJusqua);
   float informationJusqua = tab.getFloat(indexTab);
   return informationJusqua - informationDepuis;
+}
+
+Date getDateDebut() throws IOException {
+  Variable var = fichierNetcdf.findVariable("Temperature_height_above_ground");
+  Variable varTime = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());
+  Date min = null;
+  int size = (int) lireVariable(varTime).getSize();
+  for(int iDate = 0; iDate < size; iDate++) {
+    Date date = getDate(varTime, iDate);
+    if(min == null || date.compareTo(min) < 0)
+      min = date;
+  }
+  return min;
+}
+
+Date getDateFin() throws IOException {
+  Variable var = fichierNetcdf.findVariable("Temperature_height_above_ground");
+  Variable varTime = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());
+  Date max = null;
+  int size = (int) lireVariable(varTime).getSize();
+  for(int iDate = 0; iDate < size; iDate++) {
+    Date date = getDate(varTime, iDate);
+    if(max == null || date.compareTo(max) > 0)
+      max = date;
+  }
+  return max;
 }
 
 // Les fonctions suivantes douvent être assez claires.
@@ -216,6 +259,8 @@ void ouvrirGrib(File fichier) {
 void chargerFichierNetcdf() throws IOException {
   message = "Chargement du fichier GRIB...";
   fichierNetcdf = NetcdfFile.open(chemin.getPath());
+  for(Variable var : fichierNetcdf.getVariables())
+    lireVariable(var);
   message = "";
   selectOutput("Sélectionnez un fichier où stocker le résumé des variables", "ecrireResume");
 }
@@ -238,17 +283,20 @@ void ecrireResume() throws IOException {
   output.println("URL de téléchargement : http://dcpc-nwp.meteo.fr/services/PS_GetCache_DCPCPreviNum?token=__5yLVTdr-sGeHoPitnFc7TZ6MhBcJxuSsoZp6y0leVHU__&model={modele}&grid={grid}&package={SP1/SP2}&time={time}&referencetime={date du run}&format=grib2");
   output.println("Fichier " + chemin.getName() + "\n");
 
+  println("Ecriture des variables...");
   for(Variable var : fichierNetcdf.getVariables())
     output.println(var); // Affiche le type, le nom, les dimensions et les attributs de chaque variable
   output.println("\n---------------------\n");
   
   
   
+  println("Recherche des coords de Nantes...");
   // Nantes
   output.print("Coordonnées de Nantes (47.1636, -1.1137) dans la grille : ");
   CoordonneeGrille indexNantes = chercherIndexPlusProche(47.1636, -1.1137, fichierNetcdf);
   output.println(indexNantes.getLat() + " " + indexNantes.getLon() + " (" + indexNantes.getVraieLat() + ", " + indexNantes.getVraieLon() + ")");
   
+  println("Debug time...");
   try {
     Variable varTime = fichierNetcdf.findVariable("time");
     output.println(getDate(varTime, 0));
@@ -256,39 +304,29 @@ void ecrireResume() throws IOException {
     ex.printStackTrace();
   }
   
+  println("Température...");
   // Affichage de toutes les températures disponibles dans le fichier à Nantes
   Variable varTemp = fichierNetcdf.findVariable("Temperature_height_above_ground");
   if(varTemp != null) {
     // Dimensions : time/time1, height_above_ground, lat, lon
     Variable varTime = fichierNetcdf.findVariable(varTemp.getDimension(0).getFullNameEscaped());
-    int nbDates = (int)varTime.read().getSize();
+    int nbDates = (int)lireVariable(varTime).getSize();
     for(int iDate = 0; iDate < nbDates; iDate++) {
       Date date = getDate(varTime, iDate);
       float tempC = getTemperatureCelsius(47.1636, -1.1137, date);
       output.println("Température à Nantes le " + date + " : " + (tempC) + " C");
+      println("Température à Nantes le " + date + " : " + (tempC) + " C");
     }
   }
   
   output.println("\n-------------------\n");
   
-  output.println(fichierNetcdf.findVariable("time1_bounds").read());
-  output.println(fichierNetcdf.findVariable("time1").read());
-  
   output.println("\n--------------------\n");
   
-  // J'essaye de comprendre comment fonctionnent les précipitations... Et les noms de variable changent
-  Variable varPrecip = fichierNetcdf.findVariable("Total_precipitation_rate_surface_Mixed_intervals_Accumulation");
-  Array ar = varPrecip.read();
-  Variable varTime = fichierNetcdf.findVariable("time");
-  Array ar2 = varTime.read();
-  for(int i = 0; i < ar2.getSize(); i++) {
-    Index ind = ar.getIndex();
-    ind.set0(i);
-    ind.set1(indexNantes.getLat());
-    ind.set2(indexNantes.getLon());
-    output.println(ar.getFloat(ind));
-  }
-  
+  println("Dates...");
+  Date dateDebut = getDateDebut(), dateFin = getDateFin();
+  output.println(String.format("Données disponibles de %s à %s", dateDebut.toString(), dateFin.toString()));
+  output.println(String.format("Précipitations de %s à %s : %s", dateDebut, plusUneHeure(dateDebut), Float.toString(getPrecipitation(47.1636, -1.1137, dateDebut, plusUneHeure(dateDebut)))));
   
   
   output.flush();
