@@ -5,11 +5,10 @@ final String FICHIER_COMMUNES = "liste_villes.csv";
 
 // retourne l'index de la ville recherchée
 int indexVille(String nom, Table tableCommunes){
-  int i = 0;
   int max = tableCommunes.getRowCount();
   for(int rang=0; rang<max; rang ++){
-    if(!tableCommunes.getString(i,0).equalsIgnoreCase(nom))
-      return i;
+    if(!tableCommunes.getString(rang,0).equalsIgnoreCase(nom))
+      return rang;
   }
   return -1;
 }
