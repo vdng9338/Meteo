@@ -7,10 +7,11 @@ final String FICHIER_COMMUNES = "liste_villes.csv";
 int indexVille(String nom, Table tableCommunes){
   int i = 0;
   int max = tableCommunes.getRowCount();
-  while(!tableCommunes.getString(i, 0).equalsIgnoreCase(nom) && i <= max){
-    i++;
+  for(int rang=0; rang<max; rang ++){
+    if(!tableCommunes.getString(i,0).equalsIgnoreCase(nom))
+      return i;
   }
-  return i;
+  return -1;
 }
 
 // retourne les coordonnées de la ville recherchée sous la forme d'un objet CoordonneeGrille
