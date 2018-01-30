@@ -17,6 +17,46 @@ NetcdfFile fichierNetcdf;
 IndexMeteoFrance indexMeteoFrance;
 // Un message à afficher.
 volatile String message;
+// La fenetre affichée.
+Fenetre fenetre;
+
+interface Fenetre {
+  PGraphics getContenu() ;
+  
+  void mouseClick();
+}
+
+// Deux boutons : chargement automatique ou manuel.
+class EcranAccueil implements Fenetre {
+  final int HAUT = 230, GAUCHE = 90;  
+  
+  private PGraphics contenu;
+  public EcranAccueil(PGraphics contenu) {
+    contenu.beginDraw();
+    contenu.rect(GAUCHE, HAUT, 200, 40, 7);
+    contenu.rect(GAUCHE+210, HAUT, 200, 40, 7);
+    contenu.fill(#000000);
+    contenu.textSize(15);
+    contenu.text("Chargement manuel", GAUCHE+10, HAUT+20);
+    contenu.text("Chargement automatique", GAUCHE+210+5, HAUT+20);
+    contenu.endDraw();
+    this.contenu = contenu;
+  }
+  
+  PGraphics getContenu() {
+    return contenu;
+  }
+  
+  void mouseClick() {
+    if(mouseX >= GAUCHE && mouseX <= GAUCHE+200 && mouseY >= HAUT && mouseY <= HAUT+40) {
+      selectInput("Sélectionnez un fichier GRIB2", "ouvrirGrib");
+    }
+    else if(mouseX >= GAUCHE+210 && mouseX <= GAUCHE+210+200 && mouseY >= HAUT && mouseY <= HAUT+40) {
+      fenetre = null;
+      thread("chargerIndexMeteoFrance");
+    }
+  }
+}
 
 // Le chemin d'enregistrement d'un résumé.
 File cheminResume; 
@@ -204,29 +244,46 @@ float getVitesseRafales(float lat, float lon, Date date) throws IOException {
   return vitesse;
 }
 
+
+
+
+
+
+
+
+
+
 void setup() {
-  size(400,200);
+  size(600, 500);
   background(#ffffff);
   frameRate(30);
   fill(#000000);
-  thread("chargerTableCommunesThread"); // permet de laisser l'application répondre pendant que l'index est téléchargé
+  thread("chargement"); // permet de laisser l'application répondre pendant que l'index est téléchargé
 }
 
 void chargement() {
   message = "Chargement des communes...";
   chargerTableCommunes();
   message = "Chargement des pays...";
-  chargerTablepays();
+  chargerTablePays();
   message = "Chargement de l'index de Météo-France...";
-  chargerIndexMeteoFrance();
+  //chargerIndexMeteoFrance();
   message = "";
-  selectInput("Sélectionnez un fichier GRIB2", "ouvrirGrib");
+  //selectInput("Sélectionnez un fichier GRIB2", "ouvrirGrib");
+  fenetre = new EcranAccueil(createGraphics(600, 500));
 }
 
 void draw() {
   background(#ffffff);
   textSize(15);
+  if(fenetre != null)
+    image(fenetre.getContenu(), 0, 0);
   text(message, 10, 15);
+}
+
+void mouseClicked() {
+  if(fenetre != null)
+    fenetre.mouseClick();
 }
 
 void chargerIndexMeteoFrance() {
@@ -253,6 +310,7 @@ void chargerIndexMeteoFrance() {
 void ouvrirGrib(File fichier) {
   if(fichier == null)
     return;
+  fenetre = null;
   chemin = fichier;
   thread("chargerFichierNetcdf");
 }
