@@ -287,6 +287,7 @@ void mouseClicked() {
 }
 
 void chargerIndexMeteoFrance() {
+  message = "Chargement de l'index de Météo-France...";
   try {
     indexMeteoFrance = new IndexMeteoFrance(loadJSONArray("https://donneespubliques.meteofrance.fr/donnees_libres/Static/CacheDCPC_NWP.json"));
     String[][] modeles = new String[][]{{"AROME", "0.01"}, {"ARPEGE", "0.1"}};
@@ -301,10 +302,16 @@ void chargerIndexMeteoFrance() {
     Echeance arpege = indexMeteoFrance.getModele("ARPEGE", "0.1").getPack("SP1").getEcheances().get(0); // Téléchargement de ARPEGE SP1
     message = "Téléchargement de " + arpege.getNomFichier();
     arpege.telechargerSiNecessaire();
+    chemin = new File(dataPath(arpege.getNomFichier()));
+    chargerFichierNetcdf();
   } catch (Exception ex) {
     ex.printStackTrace();
     indexMeteoFrance = null;
+    message = "Chargement échoué !";
+    fenetre = new EcranAccueil(createGraphics(600, 500));
+    return;
   }
+  message = "";
 }
 
 void ouvrirGrib(File fichier) {
@@ -394,7 +401,6 @@ void ecrireResume(File fichier) {
   // On a fini !
   message = "";
 }*/
-// En fait, un véritable fourre-tout de tests et d'affichages.
 void ecrireResume() throws IOException {
   message = "Ecriture du résumé...";
   PrintWriter output = createWriter(cheminResume);
