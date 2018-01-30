@@ -333,7 +333,7 @@ void ecrireResume(File fichier) {
 
 
 // En fait, un véritable fourre-tout de tests et d'affichages.
-void ecrireResume() throws IOException {
+/*void ecrireResume() throws IOException {
   message = "Ecriture du résumé...";
   PrintWriter output = createWriter(cheminResume);
 
@@ -387,6 +387,31 @@ void ecrireResume() throws IOException {
   output.println(String.format("Données disponibles de %s à %s", dateDebut.toString(), dateFin.toString()));
   output.println(String.format("Précipitations de %s à %s : %s", dateDebut, plusUneHeure(dateDebut), Float.toString(getPrecipitation(47.1636, -1.1137, dateDebut, plusUneHeure(dateDebut)))));
   
+  
+  output.flush();
+  output.close();
+  
+  // On a fini !
+  message = "";
+}*/
+// En fait, un véritable fourre-tout de tests et d'affichages.
+void ecrireResume() throws IOException {
+  message = "Ecriture du résumé...";
+  PrintWriter output = createWriter(cheminResume);
+  
+  //CoordonneeGrille coordonnees = chercherVille(ville);
+
+  // Quelques messages systématiques
+  output.println("MàJ automatique : https://donneespubliques.meteofrance.fr/donnees_libres/Static/CacheDCPC_NWP.json");
+  output.println("URL de téléchargement : http://dcpc-nwp.meteo.fr/services/PS_GetCache_DCPCPreviNum?token=__5yLVTdr-sGeHoPitnFc7TZ6MhBcJxuSsoZp6y0leVHU__&model={modele}&grid={grid}&package={SP1/SP2}&time={time}&referencetime={date du run}&format=grib2");
+  output.println("Fichier " + chemin.getName() + "\n");
+  
+  
+  output.println(coordonnee.getLat());
+  output.println(coordonnee.getLon());
+  /*for(){
+    output.println();
+  }*/
   
   output.flush();
   output.close();
