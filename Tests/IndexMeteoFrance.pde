@@ -116,7 +116,7 @@ public class Echeance implements Comparable<Echeance> {
    */
   public boolean telechargerSiNecessaire() {
     File fic = new File(dataPath(getNomFichier()));
-    fic.mkdirs();
+    fic.getParentFile().mkdirs();
     if(!fic.exists()) {
       System.out.println(fic.getAbsolutePath() + " n'existe pas"); // debug
       for(int essai = 0; essai < echeance_nbEssais; essai++) {
