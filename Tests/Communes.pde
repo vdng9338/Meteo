@@ -1,7 +1,7 @@
 import processing.data.Table; // ambigu ?
 import java.util.List;
 
-final String FICHIER_COMMUNES = "european_cities_us_standard.csv";
+final String FICHIER_COMMUNES = "liste_villes.csv";
 Table tableCommunes;
 final float SEUIL_ACCEPTATION_NOM = 0; // à changer
 
@@ -33,8 +33,8 @@ int indexVille(String nom){
   int i = 0;
   int max = tableCommunes.getRowCount();
   for(int rang=0; rang<max; rang ++){
-    if(tableCommunes.getString(i,0).contentEquals(nom) == false)
-      return i;
+    if(tableCommunes.getString(rang,0).contentEquals(nom))
+      return rang;
   }
   return -1;
 }
@@ -85,8 +85,9 @@ List<Commune> rechercheVilles(String nom){
 // retourne les coordonnées de la ville recherchée sous la forme d'un objet CoordonneeGrille
 CoordonneeGrille chercherVille(String nom) throws IOException {
   int index = indexVille(nom);
-  double lat = tableCommunes.getDouble(index, 1);
-  double lon = tableCommunes.getDouble(index, 2);
+  double lat = tableCommunes.getDouble(index, 2);
+  double lon = tableCommunes.getDouble(index, 3);
+  println(index + " " + lat + " " + lon);
   CoordonneeGrille ville = chercherIndexPlusProche(lat, lon,  fichierNetcdf); 
   return ville;
 }
