@@ -1,7 +1,7 @@
 import processing.data.Table; // ambigu ?
 import java.util.List;
 
-final String FICHIER_COMMUNES = "liste_villes.csv";
+final String FICHIER_COMMUNES = "european_cities_us_standard.csv";
 Table tableCommunes;
 final float SEUIL_ACCEPTATION_NOM = 0; // à changer
 
