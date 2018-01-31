@@ -19,44 +19,8 @@ IndexMeteoFrance indexMeteoFrance;
 volatile String message;
 // La fenetre affichée.
 Fenetre fenetre;
-
-interface Fenetre {
-  PGraphics getContenu() ;
-  
-  void mouseClick();
-}
-
-// Deux boutons : chargement automatique ou manuel.
-class EcranAccueil implements Fenetre {
-  final int HAUT = 230, GAUCHE = 90;  
-  
-  private PGraphics contenu;
-  public EcranAccueil(PGraphics contenu) {
-    contenu.beginDraw();
-    contenu.rect(GAUCHE, HAUT, 200, 40, 7);
-    contenu.rect(GAUCHE+210, HAUT, 200, 40, 7);
-    contenu.fill(#000000);
-    contenu.textSize(15);
-    contenu.text("Chargement manuel", GAUCHE+10, HAUT+20);
-    contenu.text("Chargement automatique", GAUCHE+210+5, HAUT+20);
-    contenu.endDraw();
-    this.contenu = contenu;
-  }
-  
-  PGraphics getContenu() {
-    return contenu;
-  }
-  
-  void mouseClick() {
-    if(mouseX >= GAUCHE && mouseX <= GAUCHE+200 && mouseY >= HAUT && mouseY <= HAUT+40) {
-      selectInput("Sélectionnez un fichier GRIB2", "ouvrirGrib");
-    }
-    else if(mouseX >= GAUCHE+210 && mouseX <= GAUCHE+210+200 && mouseY >= HAUT && mouseY <= HAUT+40) {
-      fenetre = null;
-      thread("chargerIndexMeteoFrance");
-    }
-  }
-}
+// Les coordonnées de la ville
+CoordonneeGrille coordonnee;
 
 // Le chemin d'enregistrement d'un résumé.
 File cheminResume; 
@@ -273,17 +237,16 @@ void chargement() {
   fenetre = new EcranAccueil(createGraphics(600, 500));
 }
 
-void draw() {
-  background(#ffffff);
-  textSize(15);
-  if(fenetre != null)
-    image(fenetre.getContenu(), 0, 0);
-  text(message, 10, 15);
-}
+
 
 void mouseClicked() {
   if(fenetre != null)
     fenetre.mouseClick();
+}
+
+void keyPressed() {
+  if(fenetre != null)
+    fenetre.keyPress();
 }
 
 void chargerIndexMeteoFrance() {
@@ -335,12 +298,12 @@ void ecrireResume(File fichier) {
   if(fichier == null)
     return;
   cheminResume = fichier;
-  thread("ecrireResume");
+  fenetre = new DemandeVille(createGraphics(600, 500));
 }
 
 
 // En fait, un véritable fourre-tout de tests et d'affichages.
-/*void ecrireResume() throws IOException {
+void ecrireResume() throws IOException {
   message = "Ecriture du résumé...";
   PrintWriter output = createWriter(cheminResume);
 
@@ -349,17 +312,13 @@ void ecrireResume(File fichier) {
   output.println("URL de téléchargement : http://dcpc-nwp.meteo.fr/services/PS_GetCache_DCPCPreviNum?token=__5yLVTdr-sGeHoPitnFc7TZ6MhBcJxuSsoZp6y0leVHU__&model={modele}&grid={grid}&package={SP1/SP2}&time={time}&referencetime={date du run}&format=grib2");
   output.println("Fichier " + chemin.getName() + "\n");
 
-  println("Ecriture des variables...");
-  for(Variable var : fichierNetcdf.getVariables())
-    output.println(var); // Affiche le type, le nom, les dimensions et les attributs de chaque variable
-  output.println("\n---------------------\n");
-  
   
   
   println("Recherche des coords de Nantes...");
   // Nantes
   output.print("Coordonnées de Nantes (47.1636, -1.1137) dans la grille : ");
-  CoordonneeGrille indexNantes = chercherIndexPlusProche(47.1636, -1.1137, fichierNetcdf);
+  CoordonneeGrille indexNantes = chercherVille("Nantes");
+  //chercherIndexPlusProche(47.1636, -1.1137, fichierNetcdf);
   output.println(indexNantes.getLat() + " " + indexNantes.getLon() + " (" + indexNantes.getVraieLat() + ", " + indexNantes.getVraieLon() + ")");
   
   println("Debug time...");
@@ -394,30 +353,6 @@ void ecrireResume(File fichier) {
   output.println(String.format("Données disponibles de %s à %s", dateDebut.toString(), dateFin.toString()));
   output.println(String.format("Précipitations de %s à %s : %s", dateDebut, plusUneHeure(dateDebut), Float.toString(getPrecipitation(47.1636, -1.1137, dateDebut, plusUneHeure(dateDebut)))));
   
-  
-  output.flush();
-  output.close();
-  
-  // On a fini !
-  message = "";
-}*/
-void ecrireResume() throws IOException {
-  message = "Ecriture du résumé...";
-  PrintWriter output = createWriter(cheminResume);
-  
-  //CoordonneeGrille coordonnees = chercherVille(ville);
-
-  // Quelques messages systématiques
-  output.println("MàJ automatique : https://donneespubliques.meteofrance.fr/donnees_libres/Static/CacheDCPC_NWP.json");
-  output.println("URL de téléchargement : http://dcpc-nwp.meteo.fr/services/PS_GetCache_DCPCPreviNum?token=__5yLVTdr-sGeHoPitnFc7TZ6MhBcJxuSsoZp6y0leVHU__&model={modele}&grid={grid}&package={SP1/SP2}&time={time}&referencetime={date du run}&format=grib2");
-  output.println("Fichier " + chemin.getName() + "\n");
-  
-  
-  output.println(coordonnee.getLat());
-  output.println(coordonnee.getLon());
-  /*for(){
-    output.println();
-  }*/
   
   output.flush();
   output.close();
