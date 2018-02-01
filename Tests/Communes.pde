@@ -83,7 +83,7 @@ List<Commune> rechercheVilles(String nom){
 
 // retourne les coordonnées de la ville recherchée sous la forme d'un objet CoordonneeGrille
 CoordonneeGrille chercherVille(String nom) throws IOException {
-  int index = indexVille(nom);
+  int index = indexVille(normaliserNom(nom));
   if(index == -1)
     return null;
   double lat = tableCommunes.getDouble(index, 2);
@@ -91,4 +91,26 @@ CoordonneeGrille chercherVille(String nom) throws IOException {
   println(index + " " + lat + " " + lon);
   CoordonneeGrille ville = chercherIndexPlusProche(lat, lon,  fichierNetcdf); 
   return ville;
+}
+
+String normaliserNom(String nomCommune) {
+  String ret = nomCommune
+      .toLowerCase()
+      .replace("é", "e")
+      .replace("è", "e")
+      .replace("ê", "e")
+      .replace("ë", "e")
+      .replace("à", "a")
+      .replace("ä", "a")
+      .replace("â", "a")
+      .replace("î", "i")
+      .replace("ï", "i")
+      .replace("ô", "o")
+      .replace("û", "u")
+      .replace("-", " ")
+      .replace("'", " ");
+  if(ret.startsWith("saint "))
+      ret = "st " + ret.substring(6);
+  return ret;
+      
 }

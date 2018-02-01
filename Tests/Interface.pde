@@ -62,6 +62,7 @@ class DemandeVille implements Fenetre {
     contenu.beginDraw();
     contenu.background(#ffffff);
     contenu.fill(#000000);
+    contenu.textSize(15);
     contenu.text("Entrez le nom d'une ville : ", GAUCHE+10, HAUT+20);
     contenu.text(texte, GAUCHE+210+5, HAUT+20);
     contenu.endDraw();
