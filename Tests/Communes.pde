@@ -30,10 +30,9 @@ void chargerTableCommunes() {
 
 // retourne l'index de la ville recherchée
 int indexVille(String nom){
-  int i = 0;
   int max = tableCommunes.getRowCount();
   for(int rang=0; rang<max; rang ++){
-    if(tableCommunes.getString(rang,0).contentEquals(nom))
+    if(tableCommunes.getString(rang,0).equalsIgnoreCase(nom))
       return rang;
   }
   return -1;
@@ -85,6 +84,8 @@ List<Commune> rechercheVilles(String nom){
 // retourne les coordonnées de la ville recherchée sous la forme d'un objet CoordonneeGrille
 CoordonneeGrille chercherVille(String nom) throws IOException {
   int index = indexVille(nom);
+  if(index == -1)
+    return null;
   double lat = tableCommunes.getDouble(index, 2);
   double lon = tableCommunes.getDouble(index, 3);
   println(index + " " + lat + " " + lon);

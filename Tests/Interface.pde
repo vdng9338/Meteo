@@ -55,15 +55,16 @@ class DemandeVille implements Fenetre {
   
   private PGraphics contenu;
   public DemandeVille(PGraphics contenu) {
-    contenu.beginDraw();
-    contenu.fill(#000000);
-    contenu.text("Entrez le nom d'une ville : ", GAUCHE+10, HAUT+20);
-    contenu.text(texte, GAUCHE+210+5, HAUT+20);
-    contenu.endDraw();
     this.contenu = contenu;
   }
   
   PGraphics getContenu() {
+    contenu.beginDraw();
+    contenu.background(#ffffff);
+    contenu.fill(#000000);
+    contenu.text("Entrez le nom d'une ville : ", GAUCHE+10, HAUT+20);
+    contenu.text(texte, GAUCHE+210+5, HAUT+20);
+    contenu.endDraw();
     return contenu;
   }
   
@@ -75,12 +76,16 @@ class DemandeVille implements Fenetre {
         } // if
       } else if (key==RETURN || key==ENTER) {
         println ("ENTER");
+        ville = texte;
         try {
-          coordonnee = chercherVille(texte);
+          coordonnee = chercherVille(ville);
         } catch (IOException ex) {
           ex.printStackTrace();
         }
-        thread("ecrireResume");
+        if(coordonnee == null)
+          message = "Ville " + ville + " non trouvée !";
+        else
+          thread("ecrireResume");
       } else {
         texte+=key;
       }

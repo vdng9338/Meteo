@@ -17,6 +17,8 @@ NetcdfFile fichierNetcdf;
 IndexMeteoFrance indexMeteoFrance;
 // Un message à afficher.
 volatile String message;
+
+String ville;
 // La fenetre affichée.
 Fenetre fenetre;
 // Les coordonnées de la ville
@@ -24,6 +26,7 @@ CoordonneeGrille coordonnee;
 
 // Le chemin d'enregistrement d'un résumé.
 File cheminResume; 
+PrintWriter output;
 // Evite de relire les variables à chaque accès.
 TreeMap<String, Array> cacheVariables = new TreeMap<String, Array>();
 
@@ -298,6 +301,7 @@ void ecrireResume(File fichier) {
   if(fichier == null)
     return;
   cheminResume = fichier;
+  output = createWriter(cheminResume);
   fenetre = new DemandeVille(createGraphics(600, 500));
 }
 
@@ -305,21 +309,17 @@ void ecrireResume(File fichier) {
 // En fait, un véritable fourre-tout de tests et d'affichages.
 void ecrireResume() throws IOException {
   message = "Ecriture du résumé...";
-  PrintWriter output = createWriter(cheminResume);
 
   // Quelques messages systématiques
-  output.println("MàJ automatique : https://donneespubliques.meteofrance.fr/donnees_libres/Static/CacheDCPC_NWP.json");
-  output.println("URL de téléchargement : http://dcpc-nwp.meteo.fr/services/PS_GetCache_DCPCPreviNum?token=__5yLVTdr-sGeHoPitnFc7TZ6MhBcJxuSsoZp6y0leVHU__&model={modele}&grid={grid}&package={SP1/SP2}&time={time}&referencetime={date du run}&format=grib2");
+  /*output.println("MàJ automatique : https://donneespubliques.meteofrance.fr/donnees_libres/Static/CacheDCPC_NWP.json");
+  output.println("URL de téléchargement : http://dcpc-nwp.meteo.fr/services/PS_GetCache_DCPCPreviNum?token=__5yLVTdr-sGeHoPitnFc7TZ6MhBcJxuSsoZp6y0leVHU__&model={modele}&grid={grid}&package={SP1/SP2}&time={time}&referencetime={date du run}&format=grib2");*/
   output.println("Fichier " + chemin.getName() + "\n");
 
-  
-  
-  println("Recherche des coords de Nantes...");
-  // Nantes
-  output.print("Coordonnées de Nantes (47.1636, -1.1137) dans la grille : ");
-  CoordonneeGrille indexNantes = chercherVille("Nantes");
+ 
+  output.print("Coordonnées de " + ville + " dans la grille : ");
+  //CoordonneeGrille indexNantes = chercherVille("Nantes");
   //chercherIndexPlusProche(47.1636, -1.1137, fichierNetcdf);
-  output.println(indexNantes.getLat() + " " + indexNantes.getLon() + " (" + indexNantes.getVraieLat() + ", " + indexNantes.getVraieLon() + ")");
+  output.println(coordonnee.getLat() + " " + coordonnee.getLon() + " (" + coordonnee.getVraieLat() + ", " + coordonnee.getVraieLon() + ")");
   
   println("Debug time...");
   try {
@@ -338,24 +338,20 @@ void ecrireResume() throws IOException {
     int nbDates = (int)lireVariable(varTime).getSize();
     for(int iDate = 0; iDate < nbDates; iDate++) {
       Date date = getDate(varTime, iDate);
-      float tempC = getTemperatureCelsius(47.1636, -1.1137, date);
-      output.println("Température à Nantes le " + date + " : " + (tempC) + " C");
-      println("Température à Nantes le " + date + " : " + (tempC) + " C");
+      float tempC = getTemperatureCelsius(coordonnee.getVraieLat(), coordonnee.getVraieLon(), date);
+      output.println("Température à " + ville + " le " + date + " : " + (tempC) + " C");
+      println("Température à " + ville + " le " + date + " : " + (tempC) + " C");
     }
   }
-  
-  output.println("\n-------------------\n");
-  
-  output.println("\n--------------------\n");
-  
   println("Dates...");
   Date dateDebut = getDateDebut(), dateFin = getDateFin();
   output.println(String.format("Données disponibles de %s à %s", dateDebut.toString(), dateFin.toString()));
-  output.println(String.format("Précipitations de %s à %s : %s", dateDebut, plusUneHeure(dateDebut), Float.toString(getPrecipitation(47.1636, -1.1137, dateDebut, plusUneHeure(dateDebut)))));
+  output.println(String.format("Précipitations de %s à %s : %s", dateDebut, plusUneHeure(dateDebut), Float.toString(getPrecipitation(coordonnee.getVraieLat(), coordonnee.getVraieLon(), dateDebut, plusUneHeure(dateDebut)))));
   
+  
+  println("\n-------------------------\n\n");
   
   output.flush();
-  output.close();
   
   // On a fini !
   message = "";
