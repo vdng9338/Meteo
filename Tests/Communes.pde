@@ -17,6 +17,7 @@ class Commune {
     this.lat = lat;
     this.lon = lon;
     this.pays = pays;
+    this.ressemblance = ressemblance;
   }
   
   CoordonneeGrille coordonneeGrille() throws IOException {
@@ -40,8 +41,8 @@ int indexVille(String nom){
 
 // retourne un nombre entre 0 et 1 indiquant une similitude entre deux chaines de caractères
 float compareString(String chaine1, String chaine2){
-  chaine1 = chaine1.toLowerCase();
-  chaine2 = chaine2.toLowerCase();
+  //chaine1 = normaliserNom(chaine1);
+  //chaine2 = normaliserNom(chaine2);
   if(chaine1.equals(chaine2)) {
     return 1;
   }
@@ -58,7 +59,7 @@ float compareString(String chaine1, String chaine2){
     max = chaine1.length(); 
   }
   while(compte<max){
-    if(chaine1.charAt(compte) == chaine1.charAt(compte)) {
+    if(chaine1.charAt(compte) == chaine2.charAt(compte)) {
       points = points + 1;
     }
     compte = compte + 1;
@@ -69,23 +70,25 @@ float compareString(String chaine1, String chaine2){
 
 // retourne une liste de villes dont le nom est proche de celui recherché
 List<Commune> rechercheVilles(String nom){
+  nom = normaliserNom(nom);
   List<Commune> villes = new ArrayList<Commune>();
   int max = tableCommunes.getRowCount();
   float ressemblanceMax = 0.51f;
   for(int rang=0; rang<max; rang ++){
-    float ressemblance = compareString(tableCommunes.getString(rang,"European City"), nom);
+    if(rang % 1000 == 0) println(rang + " / " + max);
+    float ressemblance = compareString(tableCommunes.getString(rang,0).toLowerCase(), nom);
     if(ressemblance >= ressemblanceMax){
-      String nomVille = tableCommunes.getString(rang, "European City");
-      String pays = getNomPays(tableCommunes.getString(rang, "Country (ISO 3166-2)"));
-      float lat = tableCommunes.getFloat(rang, "Latitude");
-      float lon = tableCommunes.getFloat(rang, "Longitude");
+      String nomVille = tableCommunes.getString(rang, 0);
+      String pays = getNomPays(tableCommunes.getString(rang, 1));
+      float lat = tableCommunes.getFloat(rang, 2);
+      float lon = tableCommunes.getFloat(rang, 3);
       Commune commune = new Commune(nomVille, pays, lat, lon, ressemblance);
       villes.add(commune);
     }
   }
+  println(villes.size());
   villes = tri(villes);
 
-  println(villes.size());
   return villes;
 }
 
@@ -102,21 +105,19 @@ CoordonneeGrille chercherVille(String nom) throws IOException {
 }
 
 String normaliserNom(String nomCommune) {
-  String ret = nomCommune
-      .toLowerCase()
-      .replace("é", "e")
-      .replace("è", "e")
-      .replace("ê", "e")
-      .replace("ë", "e")
-      .replace("à", "a")
-      .replace("ä", "a")
-      .replace("â", "a")
-      .replace("î", "i")
-      .replace("ï", "i")
-      .replace("ô", "o")
-      .replace("û", "u")
-      .replace("-", " ")
-      .replace("'", " ");
+  nomCommune = nomCommune.toLowerCase();
+  StringBuilder sb = new StringBuilder();
+  for(int i = 0; i < nomCommune.length(); i++) {
+    char c = nomCommune.charAt(i);
+    if(c == 'é' || c == 'è' || c == 'ê' || c == 'ë') c = 'e';
+    else if(c == 'à' || c == 'â' || c == 'ä') c = 'a';
+    else if(c == 'î' || c == 'ï') c = 'i';
+    else if(c == 'ô' || c == 'ö') c = 'o';
+    else if(c == 'û' || c == 'ù' || c == 'ü') c = 'u';
+    else if(c == '-' || c == '\'') c = ' ';
+    sb.append(c);
+  }
+  String ret = sb.toString();
   if(ret.startsWith("saint "))
       ret = "st " + ret.substring(6);
   return ret;
@@ -127,6 +128,7 @@ String normaliserNom(String nomCommune) {
 // Tri une liste de communes en fonction de la ssemblance. 
 // TODO : changer en tri rapide
 List<Commune> tri(List<Commune> liste){
+  println("Tri...");
   for(int i=0; i<liste.size(); i++){
     int valMin = liste.size()-2;
     int j = liste.size()-2;
