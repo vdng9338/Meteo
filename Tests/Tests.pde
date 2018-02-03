@@ -106,8 +106,8 @@ void ouvrirGrib(File fichier) {
 void chargerFichierNetcdf() throws IOException {
   message = "Chargement du fichier GRIB...";
   fichierNetcdf = NetcdfFile.open(chemin.getPath());
-  for(Variable var : fichierNetcdf.getVariables())
-    lireVariable(var);
+  //for(Variable var : fichierNetcdf.getVariables())
+  //  lireVariable(var);
   message = "";
   selectOutput("Sélectionnez un fichier où stocker le résumé des variables", "ecrireResume");
 }

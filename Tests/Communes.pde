@@ -46,6 +46,9 @@ float compareString(String chaine1, String chaine2){
   if(chaine1.equals(chaine2)) {
     return 1;
   }
+  if(chaine1.startsWith(chaine2)) {
+    return 0.95;
+  }
   if(chaine1.contains(chaine2) || chaine2.contains(chaine1)) {
     return 0.9;
   }
