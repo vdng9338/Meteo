@@ -105,11 +105,19 @@ void ouvrirGrib(File fichier) {
 
 void chargerFichierNetcdf() throws IOException {
   message = "Chargement du fichier GRIB...";
-  fichierNetcdf = NetcdfFile.open(chemin.getPath());
+  try {
+    fichierNetcdf = NetcdfFile.open(chemin.getPath());
+  } catch (Exception ex) {
+    fenetre = new EcranAccueil(createGraphics(600, 500));
+    message = "Erreur de chargement.";
+    ex.printStackTrace();
+    return;
+  }
   //for(Variable var : fichierNetcdf.getVariables())
   //  lireVariable(var);
   message = "";
-  selectOutput("Sélectionnez un fichier où stocker le résumé des variables", "ecrireResume");
+  fenetre = new DemandeVille(createGraphics(600, 500));
+  //selectOutput("Sélectionnez un fichier où stocker le résumé des variables", "ecrireResume");
 }
 
 void ecrireResume(File fichier) {
@@ -117,7 +125,6 @@ void ecrireResume(File fichier) {
     return;
   cheminResume = fichier;
   output = createWriter(cheminResume);
-  fenetre = new DemandeVille(createGraphics(600, 500));
 }
 
 
