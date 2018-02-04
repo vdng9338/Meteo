@@ -92,24 +92,42 @@ class DemandeVille implements Fenetre {
 class ChoixVille implements Fenetre {
   final int HAUT = 100, GAUCHE = 100;  
   List<Commune> listeVilles;
+  int debut = 0;
   
   private PGraphics contenu;
-  public ChoixVille (PGraphics contenu, List<Commune> villes) {
+  public ChoixVille (PGraphics contenu, List<Commune> villes, int debut) {
     //texte = "";
-    println("Choix !");
     String affichage;
     this.listeVilles = villes;
+    this.debut = debut;
     contenu.beginDraw();
     contenu.fill(#000000);
     contenu.text("Sélectionnez une ville", GAUCHE, 50);
+    if(villes.size()>=debut+6){
+      contenu.text((debut+1) + "-" + (debut+6) + "/" + villes.size(), GAUCHE, 80);
+    }else{
+      contenu.text((debut+1) + "-" + villes.size() + "/" + villes.size(), GAUCHE, 80);
+    }
     for(int i=0; i<=5; i++){
-      if(i < villes.size()){
-        affichage = villes.get(i).nom + "  :  " + villes.get(i).pays;
+      if(i+debut < villes.size()){
+        affichage = villes.get(i+debut).nom + "  :  " + villes.get(i+debut).pays + " : " + villes.get(i+debut).ressemblance;
         contenu.fill(#ffffff);
-        contenu.rect(GAUCHE, HAUT+40*i, 200, 40);
+        contenu.rect(GAUCHE, HAUT+40*i, 250, 40);
         contenu.fill(#000000);
         contenu.text(affichage, GAUCHE+10, HAUT+40*i+20);
       }
+    }
+    if(villes.size()>debut+6){
+      contenu.fill(#ffffff);
+      contenu.rect(270, 350, 80, 40);
+      contenu.fill(#000000);
+      contenu.text("suivant->", 280, 370);
+    }
+    if(debut>0){
+      contenu.fill(#ffffff);
+      contenu.rect(100, 350, 80, 40);
+      contenu.fill(#000000);
+      contenu.text("<-précédent", 110, 370);
     }
     contenu.endDraw();
     this.contenu = contenu;
@@ -122,6 +140,12 @@ class ChoixVille implements Fenetre {
   void keyPress() {
     if(key == ENTER)
       fenetre = new DemandeVille(createGraphics(600,500));
+    if(key == CODED){
+      if(keyCode == RIGHT && debut+6<listeVilles.size())
+        fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut+6);
+      if(keyCode == LEFT && debut>0)
+        fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut-6);
+    }
   }
   
   void mouseClick(){
@@ -140,13 +164,18 @@ class ChoixVille implements Fenetre {
           choix = this.listeVilles.get(4);
         } else {
           choix = null;
-          println("raté");
         }
         
         fenetre = new AfficheResume(createGraphics(600,500), choix);
       } catch (Exception ex) {
         ex.printStackTrace();
       }
+    }
+    if(mouseY>=350 && mouseY<=390){
+      if(mouseX>=270 && mouseX<=350 && debut+6<listeVilles.size())
+        fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut+6);
+      if(mouseX>=100 && mouseX<=180 && debut>0)
+        fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut-6);
     }
   }
 }
