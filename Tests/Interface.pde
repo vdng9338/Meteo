@@ -78,7 +78,7 @@ class DemandeVille implements Fenetre {
           texte=texte.substring(0, texte.length()-1);
         } // if
       } else if (key==RETURN || key==ENTER) {
-        fenetre = new ChoixVille(createGraphics(600,500), rechercheVilles(texte));
+        fenetre = new ChoixVille(createGraphics(600,500), rechercheVilles(texte), 0);
       } else {
         texte+=key;
       }
