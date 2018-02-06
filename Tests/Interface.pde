@@ -155,15 +155,17 @@ class ChoixVille implements Fenetre {
     if(mouseX >= GAUCHE && mouseX <= GAUCHE+200 && mouseY>=HAUT && mouseY<=HAUT+200) {
       try{
         if(mouseY>=HAUT && mouseY<=HAUT+40){
-          choix = this.listeVilles.get(0);
+          choix = this.listeVilles.get(0+debut);
         } else if(mouseY>HAUT+40 && mouseY<=HAUT+80){
-          choix = this.listeVilles.get(1);
+          choix = this.listeVilles.get(1+debut);
         } else if(mouseY>HAUT+80 && mouseY<=HAUT+120){
-          choix = this.listeVilles.get(2);
+          choix = this.listeVilles.get(2+debut);
         } else if(mouseY>HAUT+120 && mouseY<=HAUT+160){
-          choix = this.listeVilles.get(3);
+          choix = this.listeVilles.get(3+debut);
         } else if(mouseY>HAUT+160 && mouseY<=HAUT+200){
-          choix = this.listeVilles.get(4);
+          choix = this.listeVilles.get(4+debut);
+        } else if(mouseY>HAUT+200 && mouseY<=HAUT+240){
+          choix = this.listeVilles.get(5+debut);
         } else {
           choix = null;
         }
