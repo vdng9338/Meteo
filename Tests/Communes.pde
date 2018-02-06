@@ -6,7 +6,7 @@ Table tableCommunes;
 
 // Colonnes : European City,Country (ISO 3166-2),Latitude,Longitude
 
-class Commune {
+class Commune implements Comparable<Commune> {
   public String nom, pays;
   public float lat, lon;
   public float ressemblance;
@@ -21,6 +21,16 @@ class Commune {
   
   CoordonneeGrille coordonneeGrille() throws IOException {
     return chercherIndexPlusProche(this.lat, this.lon);
+  }
+  
+  @Override
+  public int compareTo(Commune autre) {
+    if(this.ressemblance < autre.ressemblance)
+      return 1;
+    else if(this.ressemblance > autre.ressemblance)
+      return -1;
+    else
+      return this.nom.compareTo(autre.nom);
   }
 }
 
@@ -91,7 +101,7 @@ List<Commune> rechercheVilles(String nom){
   }
   
   println(villes.size() + " villes trouvées");
-  villes = tri(villes);
+  Collections.sort(villes);
 
   return villes;
 }

@@ -123,7 +123,7 @@ class ChoixVille implements Fenetre {
       }
       for(int i=0; i<=5; i++){
         if(i+debut < listeVilles.size()){
-          affichage = listeVilles.get(i+debut).nom + "  :  " + listeVilles.get(i+debut).pays + " : " + listeVilles.get(i+debut).ressemblance;
+          affichage = listeVilles.get(i+debut).nom + ", " + listeVilles.get(i+debut).pays;
           contenu.fill(#ffffff);
           contenu.rect(GAUCHE, HAUT+40*i, 250, 40, 3);
           contenu.fill(#000000);
@@ -277,9 +277,9 @@ class AfficheResume implements Fenetre {
       
       drawArrow(contenu, GAUCHE+400, HAUT+55+60, 30, directionVent);
       
-      if(!date.equals(getDateDebut())) {
-        float precipitations = getPrecipitation(ville.lat, ville.lon, moinsUneHeure(date), date);
-        float neige = getFonteNeige(ville.lat, ville.lon, moinsUneHeure(date), date);
+      if(!date.equals(getDateFin())) {
+        float precipitations = getPrecipitation(ville.lat, ville.lon, date, plusUneHeure(date));
+        float neige = getFonteNeige(ville.lat, ville.lon, date, plusUneHeure(date));
         float pluie = Math.max(0, precipitations-neige);
         String interpretationPluie = ", pas de pluie (ou presque)";
         if(pluie >= 1 && pluie < 4)
@@ -289,7 +289,7 @@ class AfficheResume implements Fenetre {
         else if(pluie >= 8)
           interpretationPluie = ", pluie forte";
         
-        contenu.text(String.format("Précipitations sur l'heure qui se termine : %.1f kg/m²", precipitations), GAUCHE+20, HAUT+55+(getNbDates()+2)*20);
+        contenu.text(String.format("Précipitations sur l'heure qui suit : %.1f kg/m²", precipitations), GAUCHE+20, HAUT+55+(getNbDates()+2)*20);
         contenu.text(String.format("Dont neige : %.1f kg/m²", neige), GAUCHE+20, HAUT+55+(getNbDates()+3)*20);
         contenu.text(String.format("Dont pluie : %.1f mm%s", pluie, interpretationPluie), GAUCHE+20, HAUT+55+(getNbDates()+4)*20);
       }
