@@ -55,7 +55,13 @@ void chargement() {
   fenetre = new EcranAccueil(createGraphics(600, 500));
 }
 
-
+void ouvrirGrib(File fichier) {
+  if(fichier == null)
+    return;
+  fenetre = null;
+  chemin = fichier;
+  thread("chargerFichierNetcdf");
+}
 
 void chargerIndexMeteoFrance() {
   message = "Chargement de l'index de Météo-France...";
@@ -85,26 +91,6 @@ void chargerIndexMeteoFrance() {
   message = "";
 }
 
-
-// Chaque événement est passé à la fenêtre affichée si elle existe.
-void mouseClicked() {
-  if(fenetre != null)
-    fenetre.mouseClick();
-}
-
-void keyPressed() {
-  if(fenetre != null)
-    fenetre.keyPress();
-}
-
-void ouvrirGrib(File fichier) {
-  if(fichier == null)
-    return;
-  fenetre = null;
-  chemin = fichier;
-  thread("chargerFichierNetcdf");
-}
-
 void chargerFichierNetcdf() throws IOException {
   message = "Chargement du fichier GRIB...";
   try {
@@ -130,4 +116,15 @@ void chargerFichierNetcdf() throws IOException {
   }
   message = "";
   fenetre = new DemandeVille(createGraphics(600, 500));
+}
+
+// Chaque événement est passé à la fenêtre affichée si elle existe.
+void mouseClicked() {
+  if(fenetre != null)
+    fenetre.mouseClick();
+}
+
+void keyPressed() {
+  if(fenetre != null)
+    fenetre.keyPress();
 }
