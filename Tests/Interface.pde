@@ -1,3 +1,7 @@
+import java.text.SimpleDateFormat;
+
+SimpleDateFormat formatDate = new SimpleDateFormat("dd/MM/yyyy 'à' HH'h'");
+
 // Une interface qui permet notamment de séparer les fonctions draw(), mouseClick() etc. pour chaque affichage.
 interface Fenetre {
   PGraphics getContenu() ;
@@ -200,7 +204,7 @@ class AfficheResume implements Fenetre {
     Variable var = fichierNetcdf.findVariable("Temperature_height_above_ground");
     Variable varTime = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());
     try{
-      contenu.text("Températures à " + ville.nom + " de " + getDateDebut() + " à " + getDateFin(), GAUCHE+100, HAUT);
+      contenu.text("Températures à " + ville.nom + " du " + formatDate.format(getDateDebut()) + " au " + formatDate.format(getDateFin()), GAUCHE+100, HAUT);
       
       int size = (int) lireVariable(varTime).getSize();
       for(int iDate = 0; iDate < size; iDate++) {
@@ -208,7 +212,7 @@ class AfficheResume implements Fenetre {
           Date date = getDate(varTime, iDate);
           float temp = getTemperatureCelsius(ville.lat, ville.lon, date);
           //temp = temp.substring(0,4);
-          contenu.text(String.format("%s : %.1f°C", date.toString(), temp), GAUCHE+100, HAUT +30 + iDate*20);
+          contenu.text(String.format("%s : %.1f°C", formatDate.format(date), temp), GAUCHE+100, HAUT +30 + iDate*20);
           //contenu.text( date + " : " + temp + "°C", GAUCHE+100, HAUT +30 + iDate*20);
         } catch (Exception ex){}
       }
