@@ -170,8 +170,8 @@ class ChoixVille implements Fenetre {
   }
   
   void mouseClick(){
-    Commune choix;
-    if(mouseX >= GAUCHE && mouseX <= GAUCHE+200 && mouseY>=HAUT && mouseY<=HAUT+200) {
+    Commune choix = null;
+    if(mouseX >= GAUCHE && mouseX <= GAUCHE+200 && mouseY>=HAUT && mouseY<=HAUT+240) {
       try{
         if(mouseY>=HAUT && mouseY<=HAUT+40){
           choix = this.listeVilles.get(debut+0);
@@ -183,12 +183,14 @@ class ChoixVille implements Fenetre {
           choix = this.listeVilles.get(debut+3);
         } else if(mouseY>HAUT+160 && mouseY<=HAUT+200){
           choix = this.listeVilles.get(debut+4);
-        } else {
-          choix = null;
+        } else if(mouseY>HAUT+200 && mouseY<HAUT+240) {
+          choix = this.listeVilles.get(debut+5);
         }
         
         fenetre = new AfficheResume(createGraphics(600,500), choix);
-      } catch (Exception ex) {
+      } 
+      catch (ArrayIndexOutOfBoundsException ex) {}
+      catch (Exception ex) {
         ex.printStackTrace();
       }
     }
