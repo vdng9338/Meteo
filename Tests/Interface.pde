@@ -182,9 +182,9 @@ class ChoixVille implements Fenetre {
   }
 }
 
-// TODO : affiche le résumé de la météo
+// Affiche le résumé de la météo
 class AfficheResume implements Fenetre {
-  final int HAUT = 100, GAUCHE = 100;  
+  final int HAUT = 100, GAUCHE = 20;  
   List<Commune> listeVilles;
   
   private PGraphics contenu;
@@ -216,6 +216,8 @@ class AfficheResume implements Fenetre {
       float precipitations = getPrecipitation(ville.lat, ville.lon, getDateDebut(), getDateFin());
       contenu.text(String.format("Précipitations : %.1fmm", precipitations), GAUCHE+100, HAUT+300);
     } catch (Exception ex){}
+    
+    contenu.text("Pressez ENTREE pour chercher une autre ville", GAUCHE+100, HAUT+400);
     contenu.endDraw();
     this.contenu = contenu;
   }
