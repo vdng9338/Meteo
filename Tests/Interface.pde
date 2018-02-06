@@ -138,7 +138,7 @@ class ChoixVille implements Fenetre {
       }
       if(debut>0){
         contenu.fill(#ffffff);
-        contenu.rect(100, 350, 80, 40, 7);
+        contenu.rect(100, 350, 100, 40, 7);
         contenu.fill(#000000);
         contenu.text("← Précédent", 110, 370);
       }
@@ -235,12 +235,12 @@ class AfficheResume implements Fenetre {
   PGraphics getContenu() {
     if(!modifie)
       return contenu;
+    contenu.beginDraw();
     try{
       int milieuHoriz = contenu.width/2;
       int bas = contenu.height;
       
       
-      contenu.beginDraw();
       contenu.background(#ffffff);
       contenu.fill(#ffffff);
       contenu.rect(0, 0, 200, 20);
@@ -256,17 +256,6 @@ class AfficheResume implements Fenetre {
       
       contenu.text("Données disponibles du " + formatDate.format(getDateDebut()) + " au " + formatDate.format(getDateFin()), GAUCHE, HAUT+55);
       
-      /*int size = getNbDates();
-      Date date = getDateDebut();
-      for(int iDate = 0; iDate < size; iDate++) {
-        try {
-          float temp = getTemperatureCelsius(ville.lat, ville.lon, date);
-          contenu.text(String.format("%s : %.1f°C", formatDate.format(date), temp), GAUCHE+20, HAUT +55 + (iDate+1)*20);
-          date = plusUneHeure(date);
-        } catch (Exception ex){
-          ex.printStackTrace();
-        }
-      }*/
       float temp = getTemperatureCelsius(ville.lat, ville.lon, date);
       contenu.text(String.format("Température : %.1f°C", temp), GAUCHE+20, HAUT +55 + 20);
       
@@ -290,17 +279,22 @@ class AfficheResume implements Fenetre {
         
       if(!this.date.equals(getDateDebut())) {
         contenu.fill(#ffffff);
-        contenu.rect(milieuHoriz-100, bas-20, 20, 20, 7);
+        contenu.rect(milieuHoriz-100, bas-60, 20, 20, 7);
         contenu.fill(#000000);
-        contenu.text("<", milieuHoriz-100+5, bas-5);
+        contenu.text("<", milieuHoriz-100+5, bas-45);
       }
       if(!this.date.equals(getDateFin())) {
         contenu.fill(#ffffff);
-        contenu.rect(milieuHoriz+80, bas-20, 20, 20, 7);
+        contenu.rect(milieuHoriz+80, bas-60, 20, 20, 7);
         contenu.fill(#000000);
-        contenu.text(">", milieuHoriz+80+5, bas-5);
+        contenu.text(">", milieuHoriz+80+5, bas-45);
       }
-      contenu.text(formatDate.format(this.date), milieuHoriz-60, bas-5);
+      contenu.text(formatDate.format(this.date), milieuHoriz-60, bas-45);
+      
+      contenu.fill(#ffffff);
+      contenu.rect(milieuHoriz-50, bas-30, 100, 30, 7);
+      contenu.fill(#000000);
+      contenu.text("Retour", milieuHoriz-22, bas-10);
     } catch (Exception ex){
       ex.printStackTrace();
       erreur = "Une erreur est survenue !";
@@ -309,29 +303,54 @@ class AfficheResume implements Fenetre {
       contenu.fill(#000000);
     }
     
-    contenu.text("Pressez ENTREE pour chercher une autre ville", GAUCHE+100, HAUT+450);
+    //contenu.text("Pressez ENTREE pour chercher une autre ville", GAUCHE+100, HAUT+450);
     contenu.endDraw();
     modifie = false;
     return contenu;
   }
   
   void keyPress() {
-    if(key == ENTER)
-      fenetre = new DemandeVille(createGraphics(600,500));
+    try {
+      if(key == ENTER)
+        fenetre = new DemandeVille(createGraphics(600,500));
+      else if(key == CODED && keyCode == LEFT)
+        datePrecedente();
+      else if(key == CODED && keyCode == RIGHT)
+        dateSuivante();
+    } catch (Exception ex) {
+      erreur = "Une erreur est survenue !";
+    }
+  }
+
+  void dateSuivante() throws IOException {
+    if(!date.equals(getDateFin())) {
+      date = plusUneHeure(date);
+      modifie = true;
+    }
+  }
+  
+  void datePrecedente() throws IOException {
+    if(!date.equals(getDateDebut())) {
+      date = moinsUneHeure(date);
+      modifie = true;
+    }
   }
 
   void mouseClick() {
     try {
       int bas = contenu.height;
       int milieu = contenu.width/2;
-      if(mouseY >= bas-20 && mouseY <= bas) {
-        if(mouseX >= milieu-100 && mouseX <= milieu-80 && !date.equals(getDateDebut())) {
-          date = moinsUneHeure(date);
-          modifie = true;
+      if(mouseY >= bas-60 && mouseY <= bas-40) {
+        if(mouseX >= milieu-100 && mouseX <= milieu-80) {
+          datePrecedente();
         }
-        else if(mouseX >= milieu+80 && mouseX <= milieu+100 && !date.equals(getDateFin())) {
-          date = plusUneHeure(date);
-          modifie = true;
+        else if(mouseX >= milieu+80 && mouseX <= milieu+100) {
+          dateSuivante();
+        }
+      }
+      if(mouseY >= bas-30 && mouseY <= bas) {
+        if(mouseX >= milieu-50 && mouseX <= milieu+50) {
+          fenetre = new DemandeVille(createGraphics(600,500));
         }
       }
     } catch (Exception ex) {
