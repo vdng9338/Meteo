@@ -194,6 +194,26 @@ class AfficheResume implements Fenetre {
     contenu.text(ville.pays, GAUCHE, HAUT+40);
     contenu.text(ville.lat, GAUCHE, HAUT+80);
     contenu.text(ville.lon, GAUCHE, HAUT+120);
+    
+    Variable var = fichierNetcdf.findVariable("Temperature_height_above_ground");
+    Variable varTime = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());
+    try{
+      contenu.text("Températures à " + ville.nom + " de " + getDateDebut() + " à " + getDateFin(), GAUCHE+100, HAUT);
+      
+      int size = (int) lireVariable(varTime).getSize();
+      for(int iDate = 0; iDate < size; iDate++) {
+        try {
+          Date date = getDate(varTime, iDate);
+          float temp = getTemperatureCelsius(ville.lat, ville.lon, date);
+          //temp = temp.substring(0,4);
+          contenu.text(String.format("%s : %.1f°C", date.toString(), temp), GAUCHE+100, HAUT +30 + iDate*20);
+          //contenu.text( date + " : " + temp + "°C", GAUCHE+100, HAUT +30 + iDate*20);
+        } catch (Exception ex){}
+      }
+      
+      float precipitations = getPrecipitation(ville.lat, ville.lon, getDateDebut(), getDateFin());
+      contenu.text(String.format("Précipitations : %.1fmm", precipitations), GAUCHE+100, HAUT+300);
+    } catch (Exception ex){}
     contenu.endDraw();
     this.contenu = contenu;
   }
