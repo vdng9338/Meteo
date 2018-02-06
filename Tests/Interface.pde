@@ -214,26 +214,49 @@ class ChoixVille implements Fenetre {
 class AfficheResume implements Fenetre {
   final int HAUT = 0, GAUCHE = 0;  
   List<Commune> listeVilles;
+  Date date;
+  Commune ville;
+  boolean modifie = true;
+  String erreur = "";
   
   private PGraphics contenu;
   public AfficheResume (PGraphics contenu, Commune ville) {
     println(ville);
-    
-    try{
-    
-    contenu.beginDraw();
-    contenu.fill(#ffffff);
-    contenu.rect(0, 0, 200, 20);
-    contenu.fill(#000000);
-    contenu.textSize(14);
-    contenu.text(ville.nom + ", " + ville.pays, GAUCHE+5, HAUT+15);
-    if(ville.coordonneeGrille().estBordGrille()) {
-      contenu.text("La ville est probablement hors de la grille !", GAUCHE+5, HAUT+35);
+    this.ville = ville;
+    this.contenu = contenu;
+    try {
+      this.date = getDateDebut();
+    } catch (IOException ex) {
+      ex.printStackTrace();
+      erreur = "Un problème est survenu !";
     }
-    
-      contenu.text("Températures à " + ville.nom + " du " + formatDate.format(getDateDebut()) + " au " + formatDate.format(getDateFin()) + " :", GAUCHE, HAUT+55);
+  }
+  
+  PGraphics getContenu() {
+    if(!modifie)
+      return contenu;
+    try{
+      int milieuHoriz = contenu.width/2;
+      int bas = contenu.height;
       
-      int size = getNbDates();
+      
+      contenu.beginDraw();
+      contenu.background(#ffffff);
+      contenu.fill(#ffffff);
+      contenu.rect(0, 0, 200, 20);
+      contenu.fill(#000000);
+      contenu.textSize(14);
+      contenu.text(ville.nom + ", " + ville.pays, GAUCHE+5, HAUT+15);
+      if(ville.coordonneeGrille().estBordGrille()) {
+        erreur = "Attention, la ville est probablement hors de la grille !";
+      }
+      contenu.fill(#ff0000);
+      contenu.text(erreur, GAUCHE+5, HAUT+35);
+      contenu.fill(#000000);
+      
+      contenu.text("Données disponibles du " + formatDate.format(getDateDebut()) + " au " + formatDate.format(getDateFin()), GAUCHE, HAUT+55);
+      
+      /*int size = getNbDates();
       Date date = getDateDebut();
       for(int iDate = 0; iDate < size; iDate++) {
         try {
@@ -243,31 +266,52 @@ class AfficheResume implements Fenetre {
         } catch (Exception ex){
           ex.printStackTrace();
         }
-      }
+      }*/
+      float temp = getTemperatureCelsius(ville.lat, ville.lon, date);
+      contenu.text(String.format("Température : %.1f°C", temp), GAUCHE+20, HAUT +55 + 20);
       
-      float precipitations = getPrecipitation(ville.lat, ville.lon, getDateDebut(), getDateFin());
-      float neige = getFonteNeige(ville.lat, ville.lon, getDateDebut(), getDateFin());
-      String interpretationPluie = ", pas de pluie (ou presque)";
-      if(precipitations >= 1*(size-1) && precipitations < 4*(size-1))
-        interpretationPluie = ", pluie faible";
-      else if(precipitations >= 4*(size-1) && precipitations < 8*(size-1))
-        interpretationPluie = ", pluie modérée";
-      else if(precipitations >= 8*(size-1))
-        interpretationPluie = ", pluie forte";
+      
+      if(!date.equals(getDateDebut())) {
+        float precipitations = getPrecipitation(ville.lat, ville.lon, moinsUneHeure(date), date);
+        float neige = getFonteNeige(ville.lat, ville.lon, moinsUneHeure(date), date);
+        float pluie = Math.max(0, precipitations-neige);
+        String interpretationPluie = ", pas de pluie (ou presque)";
+        if(pluie >= 1 && pluie < 4)
+          interpretationPluie = ", pluie faible";
+        else if(pluie >= 4 && pluie < 8)
+          interpretationPluie = ", pluie modérée";
+        else if(pluie >= 8)
+          interpretationPluie = ", pluie forte";
         
-      contenu.text(String.format("Précipitations : %.1f kg/m2%s", precipitations, interpretationPluie), GAUCHE+20, HAUT+55+(getNbDates()+3)*20);
-      contenu.text(String.format("Dont neige : %.1f kg/m2", neige), GAUCHE+20, HAUT+55+(getNbDates()+4)*20);
-      contenu.text(String.format("Dont pluie : %.1f mm", precipitations-neige), GAUCHE+20, HAUT+55+(getNbDates()+5)*20);
+        contenu.text(String.format("Précipitations sur l'heure qui se termine : %.1f kg/m2", precipitations), GAUCHE+20, HAUT+55+(getNbDates()+2)*20);
+        contenu.text(String.format("Dont neige : %.1f kg/m2", neige), GAUCHE+20, HAUT+55+(getNbDates()+3)*20);
+        contenu.text(String.format("Dont pluie : %.1f mm%s", pluie, interpretationPluie), GAUCHE+20, HAUT+55+(getNbDates()+4)*20);
+      }
+        
+      if(!this.date.equals(getDateDebut())) {
+        contenu.fill(#ffffff);
+        contenu.rect(milieuHoriz-100, bas-20, 20, 20, 7);
+        contenu.fill(#000000);
+        contenu.text("<", milieuHoriz-100+5, bas-5);
+      }
+      if(!this.date.equals(getDateFin())) {
+        contenu.fill(#ffffff);
+        contenu.rect(milieuHoriz+80, bas-20, 20, 20, 7);
+        contenu.fill(#000000);
+        contenu.text(">", milieuHoriz+80+5, bas-5);
+      }
+      contenu.text(formatDate.format(this.date), milieuHoriz-60, bas-5);
     } catch (Exception ex){
       ex.printStackTrace();
+      erreur = "Une erreur est survenue !";
+      contenu.fill(#ff0000);
+      contenu.text(erreur, GAUCHE+5, HAUT+35);
+      contenu.fill(#000000);
     }
     
     contenu.text("Pressez ENTREE pour chercher une autre ville", GAUCHE+100, HAUT+450);
     contenu.endDraw();
-    this.contenu = contenu;
-  }
-  
-  PGraphics getContenu() {
+    modifie = false;
     return contenu;
   }
   
@@ -276,5 +320,24 @@ class AfficheResume implements Fenetre {
       fenetre = new DemandeVille(createGraphics(600,500));
   }
 
-  void mouseClick() {}
+  void mouseClick() {
+    try {
+      int bas = contenu.height;
+      int milieu = contenu.width/2;
+      if(mouseY >= bas-20 && mouseY <= bas) {
+        if(mouseX >= milieu-100 && mouseX <= milieu-80 && !date.equals(getDateDebut())) {
+          date = moinsUneHeure(date);
+          modifie = true;
+        }
+        else if(mouseX >= milieu+80 && mouseX <= milieu+100 && !date.equals(getDateFin())) {
+          date = plusUneHeure(date);
+          modifie = true;
+        }
+      }
+    } catch (Exception ex) {
+      erreur = "Une erreur est survenue !";
+      modifie = true;
+      ex.printStackTrace();
+    }
+  }
 }

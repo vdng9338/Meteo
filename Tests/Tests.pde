@@ -30,6 +30,9 @@ Date plusUneHeure(Date date) {
   return new Date(date.getTime() + 3600 * 1000);
 }
 
+Date moinsUneHeure(Date date) {
+ return new Date(date.getTime() - 3600*1000); 
+}
 
 
 
