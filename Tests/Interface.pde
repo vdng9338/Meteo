@@ -257,8 +257,25 @@ class AfficheResume implements Fenetre {
       contenu.text("Données disponibles du " + formatDate.format(getDateDebut()) + " au " + formatDate.format(getDateFin()), GAUCHE, HAUT+55);
       
       float temp = getTemperatureCelsius(ville.lat, ville.lon, date);
-      contenu.text(String.format("Température : %.1f°C", temp), GAUCHE+20, HAUT +55 + 20);
+      contenu.text(String.format("Température : %.1f°C", temp), GAUCHE+20, HAUT +55 + 40);
+      float directionVent = (getDirectionOrigineVent(ville.lat, ville.lon, date) + 180) % 360;
+      float vitesseVentKmh = getVitesseVent(ville.lat, ville.lon, date) * 3.6;
+      float vitesseRafalesKmh = getVitesseRafales(ville.lat, ville.lon, date) * 3.6;
+      contenu.text(String.format("Direction du vent (vers laquelle il souffle) : %.0f°", directionVent), GAUCHE+20, HAUT+55+60); 
+      contenu.text(String.format("Vitesse du vent : %.0f km/h", vitesseVentKmh), GAUCHE+20, HAUT+55+80);
+      contenu.text(String.format("Rafales : %.0f km/h", vitesseRafalesKmh), GAUCHE+20, HAUT+55+100);
       
+      float nuage = getNebulositeTotale(ville.lat, ville.lon, date);
+      String interpretationNuage = ", ciel dégagé";
+      if(nuage >= 12.5 && nuage < 37.5)
+        interpretationNuage = ", quelques nuages";
+      else if(nuage >= 37.5 && nuage < 75.0)
+        interpretationNuage = ", ciel nuageux";
+      else if(nuage >= 75.0)
+        interpretationNuage = ", ciel très couvert";
+      contenu.text(String.format("Nébulosité (nuages) : %.0f%%%s", nuage, interpretationNuage), GAUCHE+20, HAUT+55+120);
+      
+      drawArrow(contenu, GAUCHE+400, HAUT+55+60, 30, directionVent);
       
       if(!date.equals(getDateDebut())) {
         float precipitations = getPrecipitation(ville.lat, ville.lon, moinsUneHeure(date), date);
@@ -272,8 +289,8 @@ class AfficheResume implements Fenetre {
         else if(pluie >= 8)
           interpretationPluie = ", pluie forte";
         
-        contenu.text(String.format("Précipitations sur l'heure qui se termine : %.1f kg/m2", precipitations), GAUCHE+20, HAUT+55+(getNbDates()+2)*20);
-        contenu.text(String.format("Dont neige : %.1f kg/m2", neige), GAUCHE+20, HAUT+55+(getNbDates()+3)*20);
+        contenu.text(String.format("Précipitations sur l'heure qui se termine : %.1f kg/m²", precipitations), GAUCHE+20, HAUT+55+(getNbDates()+2)*20);
+        contenu.text(String.format("Dont neige : %.1f kg/m²", neige), GAUCHE+20, HAUT+55+(getNbDates()+3)*20);
         contenu.text(String.format("Dont pluie : %.1f mm%s", pluie, interpretationPluie), GAUCHE+20, HAUT+55+(getNbDates()+4)*20);
       }
         
@@ -307,6 +324,16 @@ class AfficheResume implements Fenetre {
     contenu.endDraw();
     modifie = false;
     return contenu;
+  }
+  
+  void drawArrow(PGraphics contenu, int cx, int cy, int len, float angle){
+    contenu.pushMatrix();
+    contenu.translate(cx, cy);
+    contenu.rotate(radians(angle-90)); // 0 degrés signifie droite, 90 bas, 180 gauche, 270 haut. Donc on tourne tout de 90 deg dans le sens trigonométrique
+    contenu.line(0,0,len, 0);
+    contenu.line(len, 0, len - 8, -8);
+    contenu.line(len, 0, len - 8, 8);
+    contenu.popMatrix();
   }
   
   void keyPress() {
