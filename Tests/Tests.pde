@@ -109,6 +109,19 @@ void chargerFichierNetcdf() throws IOException {
   message = "Chargement du fichier GRIB...";
   try {
     fichierNetcdf = NetcdfFile.open(chemin.getPath());
+    String[] variablesACharger = new String[]{
+      "Temperature_height_above_ground",
+      "Total_precipitation_rate_surface_Mixed_intervals_Accumulation",
+      "Snow_melt_surface_Mixed_intervals_Average",
+      "Total_cloud_cover_surface_layer",
+      "Wind_direction_from_which_blowing_height_above_ground",
+      "Wind_speed_height_above_ground",
+      "Wind_speed_gust_height_above_ground"};
+    for(int iStr = 0; iStr < variablesACharger.length; iStr++) {
+      String str = variablesACharger[iStr];
+      message = "Chargement " + (iStr+1) + "/" + variablesACharger.length + " : " + str;
+      lireVariable(fichierNetcdf.findVariable(str));
+    }
   } catch (Exception ex) {
     fenetre = new EcranAccueil(createGraphics(600, 500));
     message = "Erreur de chargement.";
