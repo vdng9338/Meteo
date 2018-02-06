@@ -100,8 +100,17 @@ float getInformationIntervalle(float lat, float lon, Date depuis, Date jusqua, S
     indexTab.set1(index.getLat());
     indexTab.set2(index.getLon());
   }
-  indexTab.set0(indexDateDepuis);
-  float informationDepuis = tab.getFloat(indexTab);
+  float informationDepuis;
+  try {
+    indexTab.set0(indexDateDepuis);
+    informationDepuis = tab.getFloat(indexTab);
+  } catch (ArrayIndexOutOfBoundsException ex) {
+    if(depuis.equals(getDateDebut()))
+      informationDepuis = 0;
+    else {
+      throw ex;
+    }
+  }
   indexTab.set0(indexDateJusqua);
   float informationJusqua = tab.getFloat(indexTab);
   return informationJusqua - informationDepuis;
@@ -131,6 +140,12 @@ Date getDateFin() throws IOException {
       max = date;
   }
   return max;
+}
+
+int getNbDates() throws IOException {
+  Variable var = fichierNetcdf.findVariable("Temperature_height_above_ground");
+  Variable varTime = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());
+  return (int) lireVariable(varTime).getSize();
 }
 
 // Les fonctions suivantes douvent être assez claires.

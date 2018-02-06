@@ -188,40 +188,53 @@ class ChoixVille implements Fenetre {
 
 // Affiche le résumé de la météo
 class AfficheResume implements Fenetre {
-  final int HAUT = 100, GAUCHE = 20;  
+  final int HAUT = 0, GAUCHE = 0;  
   List<Commune> listeVilles;
   
   private PGraphics contenu;
   public AfficheResume (PGraphics contenu, Commune ville) {
     println(ville);
     contenu.beginDraw();
+    contenu.fill(#ffffff);
+    contenu.rect(0, 0, 200, 20);
     contenu.fill(#000000);
-    contenu.text(ville.nom, GAUCHE, HAUT);
-    contenu.text(ville.pays, GAUCHE, HAUT+40);
-    contenu.text(ville.lat, GAUCHE, HAUT+80);
-    contenu.text(ville.lon, GAUCHE, HAUT+120);
+    contenu.textSize(14);
+    contenu.text(ville.nom + ", " + ville.pays, GAUCHE+5, HAUT+15);
+    contenu.fill(#000000);
     
-    Variable var = fichierNetcdf.findVariable("Temperature_height_above_ground");
-    Variable varTime = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());
     try{
-      contenu.text("Températures à " + ville.nom + " du " + formatDate.format(getDateDebut()) + " au " + formatDate.format(getDateFin()), GAUCHE+100, HAUT);
+      contenu.text("Températures à " + ville.nom + " du " + formatDate.format(getDateDebut()) + " au " + formatDate.format(getDateFin()) + " :", GAUCHE, HAUT+35);
       
-      int size = (int) lireVariable(varTime).getSize();
+      int size = getNbDates();
+      Date date = getDateDebut();
       for(int iDate = 0; iDate < size; iDate++) {
         try {
-          Date date = getDate(varTime, iDate);
           float temp = getTemperatureCelsius(ville.lat, ville.lon, date);
-          //temp = temp.substring(0,4);
-          contenu.text(String.format("%s : %.1f°C", formatDate.format(date), temp), GAUCHE+100, HAUT +30 + iDate*20);
-          //contenu.text( date + " : " + temp + "°C", GAUCHE+100, HAUT +30 + iDate*20);
-        } catch (Exception ex){}
+          contenu.text(String.format("%s : %.1f°C", formatDate.format(date), temp), GAUCHE+20, HAUT +35 + (iDate+1)*20);
+          date = plusUneHeure(date);
+        } catch (Exception ex){
+          ex.printStackTrace();
+        }
       }
       
       float precipitations = getPrecipitation(ville.lat, ville.lon, getDateDebut(), getDateFin());
-      contenu.text(String.format("Précipitations : %.1fmm", precipitations), GAUCHE+100, HAUT+300);
-    } catch (Exception ex){}
+      float neige = getFonteNeige(ville.lat, ville.lon, getDateDebut(), getDateFin());
+      String interpretationPluie = ", pas de pluie (ou presque)";
+      if(precipitations >= 1*(size-1) && precipitations < 4*(size-1))
+        interpretationPluie = ", pluie faible";
+      else if(precipitations >= 4*(size-1) && precipitations < 8*(size-1))
+        interpretationPluie = ", pluie modérée";
+      else if(precipitations >= 8*(size-1))
+        interpretationPluie = ", pluie forte";
+        
+      contenu.text(String.format("Précipitations : %.1f kg/m2%s", precipitations, interpretationPluie), GAUCHE+20, HAUT+35+(getNbDates()+3)*20);
+      contenu.text(String.format("Dont neige : %.1f kg/m2", neige), GAUCHE+20, HAUT+35+(getNbDates()+4)*20);
+      contenu.text(String.format("Dont pluie : %.1f mm", precipitations-neige), GAUCHE+20, HAUT+35+(getNbDates()+5)*20);
+    } catch (Exception ex){
+      ex.printStackTrace();
+    }
     
-    contenu.text("Pressez ENTREE pour chercher une autre ville", GAUCHE+100, HAUT+400);
+    contenu.text("Pressez ENTREE pour chercher une autre ville", GAUCHE+100, HAUT+450);
     contenu.endDraw();
     this.contenu = contenu;
   }
