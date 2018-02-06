@@ -10,5 +10,6 @@ THIS SOFTWARE IS PROVIDED BY UCAR/UNIDATA "AS IS" AND ANY EXPRESS OR IMPLIED WAR
 
 
 
-Ce projet utilise les données de Météo-France sous licence ouverte Etalab.
-Ce projet utilise la liste des communes géolocalisées par régions, départements et circonscriptions par Regards Citoyens, sous licence ODbL : http://www.nosdonnees.fr/dataset/listes-des-communes-par-r-gions-d-partements-circonscriptions
+Ce projet utilise les données de Météo-France sous licence ouverte Etalab (https://www.etalab.gouv.fr/wp-content/uploads/2014/05/Licence_Ouverte.pdf).
+Ce projet utilise une liste de communes du site http://www.clearlyandsimply.com/clearly_and_simply/2010/10/geocoding-databases-for-europe.html . A noter : tous les pays européens ne sont pas inclus, il manque l'Irelande, la Grèce, la Bosnie-Herzégovine, la Roumanie, la Serbie, le Monténégro, l'Albanie, l'Ukraine, la Biélorussie et tous les Etats baltiques. Le fichier concerné est european_cities_us_standard.csv.
+Ce projet utilise la liste des pays CSV du site sql.sh (http://sql.sh/514-liste-pays-csv-xml), sous licence Creative Commons Attribution - Partage dans les mêmes conditions 4.0 Internationam (CC BY-SA). Le texte de la licence peut être consulté sur http://creativecommons.org/licenses/by-sa/4.0/. Le fichier concerné est sql-pays.csv.
