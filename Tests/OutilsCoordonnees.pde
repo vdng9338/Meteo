@@ -34,6 +34,10 @@ class CoordonneeGrille {
   public float getVraieLon() {
     return vraieLon;
   }
+  
+  public boolean estBordGrille() throws IOException{
+    return (lat == 0 || lat == getNbLatitudes()-1 || lon == 0 || lon == getNbLongitudes()-1);
+  }
 }
 
 /**
@@ -93,12 +97,20 @@ int indexRechercheDichotomieLongitude(Array ar, int debut, int finExcl, double v
 /**
  * Cherche les coordonnées de la grille les plus proches des coordonnées géographiques passées en paramètre.
  */
-CoordonneeGrille chercherIndexPlusProche(double lat, double lon, NetcdfFile fichier) throws IOException {
+CoordonneeGrille chercherIndexPlusProche(double lat, double lon) throws IOException {
   if(lon < 180) // Les longitudes vont de 180 à 540, a priori, sur tous les modèles 
     lon = lon + 360;
-  Array lats = fichier.findVariable("lat").read();
-  Array lons = fichier.findVariable("lon").read();
+  Array lats = lireVariable(fichierNetcdf.findVariable("lat"));
+  Array lons = lireVariable(fichierNetcdf.findVariable("lon"));
   int coordLat = indexRechercheDichotomieLatitude(lats, 0, (int)lats.getSize(), lat);
   int coordLon = indexRechercheDichotomieLongitude(lons, 0, (int)lons.getSize(), lon);
   return new CoordonneeGrille(coordLat, coordLon, lats.getFloat(coordLat), lons.getFloat(coordLon));
+}
+
+int getNbLongitudes() throws IOException {
+  return (int)lireVariable(fichierNetcdf.findVariable("lon")).getSize();
+}
+
+int getNbLatitudes() throws IOException {
+  return (int)lireVariable(fichierNetcdf.findVariable("lat")).getSize();
 }

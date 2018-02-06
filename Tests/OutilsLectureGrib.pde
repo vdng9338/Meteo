@@ -57,7 +57,7 @@ int indexDateFinIntervalle(Variable varTimeBounds, Variable varTime, Date dateRe
 
 // Fonction générique qui retourne une information float avec les paramètres donnés.
 float getInformationFloat(float lat, float lon, Date date, String nom) throws IOException {
-  CoordonneeGrille index = chercherIndexPlusProche(lat, lon, fichierNetcdf);
+  CoordonneeGrille index = chercherIndexPlusProche(lat, lon);
   Variable var = fichierNetcdf.findVariable(nom);
   if(var != null) {
     // Dimensions : time/time1, (height_above_ground/1,) lat, lon
@@ -83,7 +83,7 @@ float getInformationFloat(float lat, float lon, Date date, String nom) throws IO
 
 // TODO : Extrêmement confus. Retourne une information qui porte sur un intervalle (précipitations ou neige).
 float getInformationIntervalle(float lat, float lon, Date depuis, Date jusqua, String nom) throws IOException {
-  CoordonneeGrille index = chercherIndexPlusProche(lat, lon, fichierNetcdf);
+  CoordonneeGrille index = chercherIndexPlusProche(lat, lon);
   Variable var = fichierNetcdf.findVariable(nom);
   Array tab = lireVariable(var);
   Variable varDate = fichierNetcdf.findVariable(var.getDimension(0).getFullNameEscaped());

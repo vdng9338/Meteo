@@ -20,7 +20,7 @@ class Commune {
   }
   
   CoordonneeGrille coordonneeGrille() throws IOException {
-    return chercherIndexPlusProche(this.lat, this.lon, fichierNetcdf);
+    return chercherIndexPlusProche(this.lat, this.lon);
   }
 }
 
@@ -104,7 +104,7 @@ CoordonneeGrille chercherVille(String nom) throws IOException {
   double lat = tableCommunes.getDouble(index, 2);
   double lon = tableCommunes.getDouble(index, 3);
   println(index + " " + lat + " " + lon);
-  CoordonneeGrille ville = chercherIndexPlusProche(lat, lon, fichierNetcdf); 
+  CoordonneeGrille ville = chercherIndexPlusProche(lat, lon); 
   return ville;
 }
 

@@ -99,47 +99,56 @@ class ChoixVille implements Fenetre {
   final int HAUT = 100, GAUCHE = 100;  
   List<Commune> listeVilles;
   int debut = 0;
+  boolean modifie = true;
   
   private PGraphics contenu;
   public ChoixVille (PGraphics contenu, List<Commune> villes, int debut) {
     //texte = "";
-    String affichage;
     this.listeVilles = villes;
-    this.debut = debut;
-    contenu.beginDraw();
-    contenu.fill(#000000);
-    contenu.text("Sélectionnez une ville", GAUCHE, 50);
-    if(villes.size()>=debut+6){
-      contenu.text((debut+1) + "-" + (debut+6) + "/" + villes.size(), GAUCHE, 80);
-    }else{
-      contenu.text((debut+1) + "-" + villes.size() + "/" + villes.size(), GAUCHE, 80);
-    }
-    for(int i=0; i<=5; i++){
-      if(i+debut < villes.size()){
-        affichage = villes.get(i+debut).nom + "  :  " + villes.get(i+debut).pays + " : " + villes.get(i+debut).ressemblance;
-        contenu.fill(#ffffff);
-        contenu.rect(GAUCHE, HAUT+40*i, 250, 40, 3);
-        contenu.fill(#000000);
-        contenu.text(affichage, GAUCHE+10, HAUT+40*i+20);
-      }
-    }
-    if(villes.size()>debut+6){
-      contenu.fill(#ffffff);
-      contenu.rect(270, 350, 80, 40, 7);
-      contenu.fill(#000000);
-      contenu.text("Suivant →", 280, 370);
-    }
-    if(debut>0){
-      contenu.fill(#ffffff);
-      contenu.rect(100, 350, 80, 40, 7);
-      contenu.fill(#000000);
-      contenu.text("← Précédent", 110, 370);
-    }
-    contenu.endDraw();
     this.contenu = contenu;
+    this.debut = debut;
   }
    
   PGraphics getContenu() {
+    if(modifie) {
+      String affichage;
+      contenu.beginDraw();
+      contenu.background(#ffffff);
+      contenu.fill(#000000);
+      contenu.text("Sélectionnez une ville", GAUCHE, 50);
+      if(listeVilles.size()>=debut+6){
+        contenu.text((debut+1) + "-" + (debut+6) + "/" + listeVilles.size(), GAUCHE, 80);
+      }else{
+        contenu.text((debut+1) + "-" + listeVilles.size() + "/" + listeVilles.size(), GAUCHE, 80);
+      }
+      for(int i=0; i<=5; i++){
+        if(i+debut < listeVilles.size()){
+          affichage = listeVilles.get(i+debut).nom + "  :  " + listeVilles.get(i+debut).pays + " : " + listeVilles.get(i+debut).ressemblance;
+          contenu.fill(#ffffff);
+          contenu.rect(GAUCHE, HAUT+40*i, 250, 40, 3);
+          contenu.fill(#000000);
+          contenu.text(affichage, GAUCHE+10, HAUT+40*i+20);
+        }
+      }
+      if(listeVilles.size()>debut+6){
+        contenu.fill(#ffffff);
+        contenu.rect(270, 350, 80, 40, 7);
+        contenu.fill(#000000);
+        contenu.text("Suivant →", 280, 370);
+      }
+      if(debut>0){
+        contenu.fill(#ffffff);
+        contenu.rect(100, 350, 80, 40, 7);
+        contenu.fill(#000000);
+        contenu.text("← Précédent", 110, 370);
+      }
+      contenu.fill(#ffffff);
+      contenu.rect(100, 400, 80, 40, 7);
+      contenu.fill(#000000);
+      contenu.text("Retour", 110, 425);
+      contenu.endDraw();
+      modifie = false;
+    }
     return contenu;
   }
   
@@ -147,10 +156,16 @@ class ChoixVille implements Fenetre {
     if(key == ENTER)
       fenetre = new DemandeVille(createGraphics(600,500));
     if(key == CODED){
-      if(keyCode == RIGHT && debut+6<listeVilles.size())
-        fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut+6);
-      if(keyCode == LEFT && debut>0)
-        fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut-6);
+      if(keyCode == RIGHT && debut+6<listeVilles.size()) {
+        //fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut+6);
+        debut += 6;
+        modifie = true;
+      }
+      if(keyCode == LEFT && debut>0) {
+        //fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut-6);
+        debut -= 6;
+        modifie = true;
+      }
     }
   }
   
@@ -159,15 +174,15 @@ class ChoixVille implements Fenetre {
     if(mouseX >= GAUCHE && mouseX <= GAUCHE+200 && mouseY>=HAUT && mouseY<=HAUT+200) {
       try{
         if(mouseY>=HAUT && mouseY<=HAUT+40){
-          choix = this.listeVilles.get(0);
+          choix = this.listeVilles.get(debut+0);
         } else if(mouseY>HAUT+40 && mouseY<=HAUT+80){
-          choix = this.listeVilles.get(1);
+          choix = this.listeVilles.get(debut+1);
         } else if(mouseY>HAUT+80 && mouseY<=HAUT+120){
-          choix = this.listeVilles.get(2);
+          choix = this.listeVilles.get(debut+2);
         } else if(mouseY>HAUT+120 && mouseY<=HAUT+160){
-          choix = this.listeVilles.get(3);
+          choix = this.listeVilles.get(debut+3);
         } else if(mouseY>HAUT+160 && mouseY<=HAUT+200){
-          choix = this.listeVilles.get(4);
+          choix = this.listeVilles.get(debut+4);
         } else {
           choix = null;
         }
@@ -178,10 +193,19 @@ class ChoixVille implements Fenetre {
       }
     }
     if(mouseY>=350 && mouseY<=390){
-      if(mouseX>=270 && mouseX<=350 && debut+6<listeVilles.size())
-        fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut+6);
-      if(mouseX>=100 && mouseX<=180 && debut>0)
-        fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut-6);
+      if(mouseX>=270 && mouseX<=350 && debut+6<listeVilles.size()) {
+        //fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut+6);
+        debut += 6;
+        modifie = true;
+      }
+      if(mouseX>=100 && mouseX<=180 && debut>0) {
+        //fenetre = new ChoixVille(createGraphics(600,500), listeVilles, debut-6);
+        debut -= 6;
+        modifie = true;
+      }
+    }
+    if(mouseY >= 400 && mouseY <= 440 && mouseX >= 100 && mouseX <= 180) {
+      fenetre = new DemandeVille(createGraphics(600,500));
     }
   }
 }
@@ -194,23 +218,27 @@ class AfficheResume implements Fenetre {
   private PGraphics contenu;
   public AfficheResume (PGraphics contenu, Commune ville) {
     println(ville);
+    
+    try{
+    
     contenu.beginDraw();
     contenu.fill(#ffffff);
     contenu.rect(0, 0, 200, 20);
     contenu.fill(#000000);
     contenu.textSize(14);
     contenu.text(ville.nom + ", " + ville.pays, GAUCHE+5, HAUT+15);
-    contenu.fill(#000000);
+    if(ville.coordonneeGrille().estBordGrille()) {
+      contenu.text("La ville est probablement hors de la grille !", GAUCHE+5, HAUT+35);
+    }
     
-    try{
-      contenu.text("Températures à " + ville.nom + " du " + formatDate.format(getDateDebut()) + " au " + formatDate.format(getDateFin()) + " :", GAUCHE, HAUT+35);
+      contenu.text("Températures à " + ville.nom + " du " + formatDate.format(getDateDebut()) + " au " + formatDate.format(getDateFin()) + " :", GAUCHE, HAUT+55);
       
       int size = getNbDates();
       Date date = getDateDebut();
       for(int iDate = 0; iDate < size; iDate++) {
         try {
           float temp = getTemperatureCelsius(ville.lat, ville.lon, date);
-          contenu.text(String.format("%s : %.1f°C", formatDate.format(date), temp), GAUCHE+20, HAUT +35 + (iDate+1)*20);
+          contenu.text(String.format("%s : %.1f°C", formatDate.format(date), temp), GAUCHE+20, HAUT +55 + (iDate+1)*20);
           date = plusUneHeure(date);
         } catch (Exception ex){
           ex.printStackTrace();
@@ -227,9 +255,9 @@ class AfficheResume implements Fenetre {
       else if(precipitations >= 8*(size-1))
         interpretationPluie = ", pluie forte";
         
-      contenu.text(String.format("Précipitations : %.1f kg/m2%s", precipitations, interpretationPluie), GAUCHE+20, HAUT+35+(getNbDates()+3)*20);
-      contenu.text(String.format("Dont neige : %.1f kg/m2", neige), GAUCHE+20, HAUT+35+(getNbDates()+4)*20);
-      contenu.text(String.format("Dont pluie : %.1f mm", precipitations-neige), GAUCHE+20, HAUT+35+(getNbDates()+5)*20);
+      contenu.text(String.format("Précipitations : %.1f kg/m2%s", precipitations, interpretationPluie), GAUCHE+20, HAUT+55+(getNbDates()+3)*20);
+      contenu.text(String.format("Dont neige : %.1f kg/m2", neige), GAUCHE+20, HAUT+55+(getNbDates()+4)*20);
+      contenu.text(String.format("Dont pluie : %.1f mm", precipitations-neige), GAUCHE+20, HAUT+55+(getNbDates()+5)*20);
     } catch (Exception ex){
       ex.printStackTrace();
     }
