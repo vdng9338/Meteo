@@ -1,3 +1,4 @@
+// Une interface qui permet notamment de séparer les fonctions draw(), mouseClick() etc. pour chaque affichage.
 interface Fenetre {
   PGraphics getContenu() ;
   
@@ -48,7 +49,7 @@ class EcranAccueil implements Fenetre {
 }
 
 
-// demande d'entrer le nom d'une ville
+// Demande d'entrer le nom d'une ville.
 class DemandeVille implements Fenetre {
   final int HAUT = 230, GAUCHE = 90;  
   private String texte = "";
@@ -64,6 +65,7 @@ class DemandeVille implements Fenetre {
     contenu.fill(#000000);
     contenu.textSize(15);
     contenu.text("Entrez le nom d'une ville : ", GAUCHE+10, HAUT+20);
+    contenu.text("Validez par Entrée.", GAUCHE + 10, HAUT + 40);
     if(texte != null)
       contenu.text(texte, GAUCHE+210+5, HAUT+20);
     contenu.endDraw();
@@ -88,7 +90,7 @@ class DemandeVille implements Fenetre {
   void mouseClick(){}
 }
 
-// Demande de sélectionner une ville parmis celles proposées
+// Demande de sélectionner une ville parmi celles proposées.
 class ChoixVille implements Fenetre {
   final int HAUT = 100, GAUCHE = 100;  
   List<Commune> listeVilles;
@@ -112,22 +114,22 @@ class ChoixVille implements Fenetre {
       if(i+debut < villes.size()){
         affichage = villes.get(i+debut).nom + "  :  " + villes.get(i+debut).pays + " : " + villes.get(i+debut).ressemblance;
         contenu.fill(#ffffff);
-        contenu.rect(GAUCHE, HAUT+40*i, 250, 40);
+        contenu.rect(GAUCHE, HAUT+40*i, 250, 40, 3);
         contenu.fill(#000000);
         contenu.text(affichage, GAUCHE+10, HAUT+40*i+20);
       }
     }
     if(villes.size()>debut+6){
       contenu.fill(#ffffff);
-      contenu.rect(270, 350, 80, 40);
+      contenu.rect(270, 350, 80, 40, 7);
       contenu.fill(#000000);
-      contenu.text("suivant->", 280, 370);
+      contenu.text("Suivant →", 280, 370);
     }
     if(debut>0){
       contenu.fill(#ffffff);
-      contenu.rect(100, 350, 80, 40);
+      contenu.rect(100, 350, 80, 40, 7);
       contenu.fill(#000000);
-      contenu.text("<-précédent", 110, 370);
+      contenu.text("← Précédent", 110, 370);
     }
     contenu.endDraw();
     this.contenu = contenu;
