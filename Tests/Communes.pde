@@ -3,9 +3,8 @@ import java.util.List;
 
 final String FICHIER_COMMUNES = "european_cities_us_standard.csv";
 Table tableCommunes;
-final float SEUIL_ACCEPTATION_NOM = 0; // à changer
 
-// Titres : European City,Country (ISO 3166-2),Latitude,Longitude
+// Colonnes : European City,Country (ISO 3166-2),Latitude,Longitude
 
 class Commune {
   public String nom, pays;
@@ -41,8 +40,6 @@ int indexVille(String nom){
 
 // retourne un nombre entre 0 et 1 indiquant une similitude entre deux chaines de caractères
 float compareString(String chaine1, String chaine2){
-  //chaine1 = normaliserNom(chaine1);
-  //chaine2 = normaliserNom(chaine2);
   if(chaine1.equals(chaine2)) {
     return 1;
   }
@@ -77,8 +74,8 @@ List<Commune> rechercheVilles(String nom){
   List<Commune> villes = new ArrayList<Commune>();
   int max = tableCommunes.getRowCount();
   float ressemblanceMax = 0.51f;
-  for(int rang=0; rang<max; rang ++){
-    if(rang % 1000 == 0) println(rang + " / " + max);
+  
+  for(int rang=0; rang<max; rang ++) {
     float ressemblance = compareString(tableCommunes.getString(rang,0).toLowerCase(), nom);
     if(ressemblance >= ressemblanceMax){
       String nomVille = tableCommunes.getString(rang, 0);
@@ -89,7 +86,8 @@ List<Commune> rechercheVilles(String nom){
       villes.add(commune);
     }
   }
-  println(villes.size());
+  
+  println(villes.size() + " villes trouvées");
   villes = tri(villes);
 
   return villes;
@@ -103,10 +101,12 @@ CoordonneeGrille chercherVille(String nom) throws IOException {
   double lat = tableCommunes.getDouble(index, 2);
   double lon = tableCommunes.getDouble(index, 3);
   println(index + " " + lat + " " + lon);
-  CoordonneeGrille ville = chercherIndexPlusProche(lat, lon,  fichierNetcdf); 
+  CoordonneeGrille ville = chercherIndexPlusProche(lat, lon, fichierNetcdf); 
   return ville;
 }
 
+// Normalise un nom. Les Saint deviennent des St, tout est passé en minuscule, les accents, 
+// tirets et apostrophes sont supprimés.
 String normaliserNom(String nomCommune) {
   nomCommune = nomCommune.toLowerCase();
   StringBuilder sb = new StringBuilder();
@@ -128,8 +128,7 @@ String normaliserNom(String nomCommune) {
 }
 
 
-// Tri une liste de communes en fonction de la ssemblance. 
-// TODO : changer en tri rapide
+// Tri une liste de communes en fonction de la ressemblance.
 List<Commune> tri(List<Commune> liste){
   println("Tri...");
   for(int i=0; i<liste.size(); i++){
