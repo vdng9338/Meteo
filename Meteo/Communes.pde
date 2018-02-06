@@ -142,7 +142,7 @@ String normaliserNom(String nomCommune) {
 
 
 // Tri une liste de communes en fonction de la ressemblance.
-List<Commune> tri(List<Commune> liste){
+/*List<Commune> tri(List<Commune> liste){
   println("Tri...");
   for(int i=0; i<liste.size(); i++){
     int valMin = liste.size()-2;
@@ -191,4 +191,4 @@ List<Commune> triRapide(List<Commune> liste, int debut, int fin){
 
 int choixPivot(int debut, int fin){
   return int(random(debut, fin));
-}
+}*/
