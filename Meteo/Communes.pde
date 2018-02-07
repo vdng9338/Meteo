@@ -1,12 +1,12 @@
 import processing.data.Table; // ambigu ?
 import java.util.List;
+import java.text.Normalizer;
 
 final String FICHIER_COMMUNES = "european_cities_us_standard.csv";
 Table tableCommunes;
 
 // Colonnes : European City,Country (ISO 3166-2),Latitude,Longitude
 
-// Stocke le nom, le pays, la position et la ressemblance à la chaîne cherchée de la commune.
 class Commune implements Comparable<Commune> {
   public String nom, pays;
   public float lat, lon;
@@ -111,15 +111,14 @@ List<Commune> rechercheVilles(String nom){
 // tirets et apostrophes sont supprimés.
 String normaliserNom(String nomCommune) {
   nomCommune = nomCommune.toLowerCase();
+  nomCommune = Normalizer.normalize(nomCommune, Normalizer.Form.NFD);
+  println(nomCommune);
+  nomCommune = nomCommune.replaceAll("[\\p{InCombiningDiacriticalMarks}]", ""); // Internet
+  println(nomCommune);
   StringBuilder sb = new StringBuilder();
   for(int i = 0; i < nomCommune.length(); i++) {
     char c = nomCommune.charAt(i);
-    if(c == 'é' || c == 'è' || c == 'ê' || c == 'ë') c = 'e';
-    else if(c == 'à' || c == 'â' || c == 'ä') c = 'a';
-    else if(c == 'î' || c == 'ï') c = 'i';
-    else if(c == 'ô' || c == 'ö') c = 'o';
-    else if(c == 'û' || c == 'ù' || c == 'ü') c = 'u';
-    else if(c == '-' || c == '\'') c = ' ';
+    if(c == '-' || c == '\'') c = ' ';
     sb.append(c);
   }
   String ret = sb.toString();
