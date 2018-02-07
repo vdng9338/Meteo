@@ -279,7 +279,7 @@ class AfficheResume implements Fenetre {
         interpretationNuage = ", ciel très couvert";
       contenu.text(String.format("Nébulosité (nuages) : %.0f%%%s", nuage, interpretationNuage), GAUCHE+20, HAUT+55+120);
       
-      drawArrow(contenu, GAUCHE+400, HAUT+55+60, 30, directionVent);
+      drawArrow(contenu, GAUCHE+400, HAUT+55+60, (int)vitesseVentKmh, directionVent);
       
       if(!date.equals(getDateFin())) {
         float precipitations = getPrecipitation(ville.lat, ville.lon, date, plusUneHeure(date));
@@ -330,7 +330,7 @@ class AfficheResume implements Fenetre {
     return contenu;
   }
   
-  void drawArrow(PGraphics contenu, int cx, int cy, int len, float angle){
+  void drawArrow(PGraphics contenu, int cx, int cy, int len, float angle){ // Internet
     contenu.pushMatrix();
     contenu.translate(cx, cy);
     contenu.rotate(radians(angle-90)); // 0 degrés signifie droite, 90 bas, 180 gauche, 270 haut. Donc on tourne tout de 90 deg dans le sens trigonométrique
