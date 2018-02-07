@@ -15,7 +15,8 @@ void draw() {
   textSize(15);
   if(fenetre != null)
     image(fenetre.getContenu(), 0, 0);
-  text(message, 10, 15);
+  if(message != null)
+    text(message, 10, 15);
 }
 
 // Deux boutons : chargement automatique ou manuel.
@@ -69,7 +70,7 @@ class DemandeVille implements Fenetre {
     contenu.fill(#000000);
     contenu.textSize(15);
     contenu.text("Entrez le nom d'une ville : ", GAUCHE+10, HAUT+20);
-    contenu.text("Validez par Entrée.", GAUCHE + 10, HAUT + 40);
+    contenu.text("Validez par Entrée.\nIMPORTANT : Les données fournies par Météo-France sont des\nrésultats de modèles numériques. La création de prévisions\nimplique une analyse par des prévisionnistes.", GAUCHE + 10, HAUT + 40);
     if(texte != null)
       contenu.text(texte, GAUCHE+210+5, HAUT+20);
     contenu.endDraw();
@@ -115,6 +116,7 @@ class ChoixVille implements Fenetre {
       contenu.beginDraw();
       contenu.background(#ffffff);
       contenu.fill(#000000);
+      contenu.textSize(15);
       contenu.text("Sélectionnez une ville", GAUCHE, 50);
       if(listeVilles.size()>=debut+6){
         contenu.text((debut+1) + "-" + (debut+6) + "/" + listeVilles.size(), GAUCHE, 80);
