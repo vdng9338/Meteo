@@ -116,7 +116,7 @@ class ChoixVille implements Fenetre {
       contenu.beginDraw();
       contenu.background(#ffffff);
       contenu.fill(#000000);
-      contenu.textSize(15);
+      contenu.textSize(13);
       contenu.text("Sélectionnez une ville", GAUCHE, 50);
       if(listeVilles.size()>=debut+6){
         contenu.text((debut+1) + "-" + (debut+6) + "/" + listeVilles.size(), GAUCHE, 80);
