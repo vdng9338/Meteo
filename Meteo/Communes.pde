@@ -106,18 +106,6 @@ List<Commune> rechercheVilles(String nom){
   return villes;
 }
 
-// retourne les coordonnées de la ville recherchée sous la forme d'un objet CoordonneeGrille
-CoordonneeGrille chercherVille(String nom) throws IOException {
-  int index = indexVille(normaliserNom(nom));
-  if(index == -1)
-    return null;
-  double lat = tableCommunes.getDouble(index, 2);
-  double lon = tableCommunes.getDouble(index, 3);
-  println(index + " " + lat + " " + lon);
-  CoordonneeGrille ville = chercherIndexPlusProche(lat, lon); 
-  return ville;
-}
-
 // Normalise un nom. Les Saint deviennent des St, tout est passé en minuscule, les accents, 
 // tirets et apostrophes sont supprimés.
 String normaliserNom(String nomCommune) {
@@ -139,56 +127,3 @@ String normaliserNom(String nomCommune) {
   return ret;
       
 }
-
-
-// Tri une liste de communes en fonction de la ressemblance.
-/*List<Commune> tri(List<Commune> liste){
-  println("Tri...");
-  for(int i=0; i<liste.size(); i++){
-    int valMin = liste.size()-2;
-    int j = liste.size()-2;
-    while(j>i){
-      j = j-1;
-      if(liste.get(j).ressemblance > liste.get(valMin).ressemblance)
-        valMin = j;
-    }
-    Commune a = liste.get(j);
-    liste.set(j, liste.get(valMin));
-    liste.set(valMin, a);
-  }
-  return liste;
-}
-
-int partitionner(List<Commune> liste, int debut, int fin, int pivot){
-  Commune a = liste.get(fin);
-  liste.set(fin, liste.get(pivot));
-  liste.set(pivot, a);
-  
-  int j = debut;
-  for(int i=debut; i<fin; i++){
-    if(liste.get(i).ressemblance<=liste.get(fin).ressemblance){
-      a = liste.get(i);
-      liste.set(i, liste.get(j));
-      liste.set(j, a);
-      j++;
-    }
-  }
-  a = liste.get(fin);
-  liste.set(fin, liste.get(j));
-  liste.set(j, a);
-  return j;
-}
-
-List<Commune> triRapide(List<Commune> liste, int debut, int fin){
-  if(debut<fin){
-    int pivot = choixPivot(debut, fin);
-    pivot = partitionner(liste, debut, fin, pivot);
-    triRapide(liste, debut, pivot-1);
-    triRapide(liste, pivot+1, fin);
-  } 
-  return liste;
-} 
-
-int choixPivot(int debut, int fin){
-  return int(random(debut, fin));
-}*/
