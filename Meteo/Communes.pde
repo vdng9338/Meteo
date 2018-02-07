@@ -6,6 +6,7 @@ Table tableCommunes;
 
 // Colonnes : European City,Country (ISO 3166-2),Latitude,Longitude
 
+// Stocke le nom, le pays, la position et la ressemblance à la chaîne cherchée de la commune.
 class Commune implements Comparable<Commune> {
   public String nom, pays;
   public float lat, lon;
@@ -86,11 +87,11 @@ List<Commune> rechercheVilles(String nom){
   nom = normaliserNom(nom);
   List<Commune> villes = new ArrayList<Commune>();
   int max = tableCommunes.getRowCount();
-  float ressemblanceMax = 0.51f;
+  float ressemblanceMin = 0.7f;
   
   for(int rang=0; rang<max; rang ++) {
     float ressemblance = compareString(tableCommunes.getString(rang,0).toLowerCase(), nom);
-    if(ressemblance >= ressemblanceMax){
+    if(ressemblance >= ressemblanceMin){
       String nomVille = tableCommunes.getString(rang, 0);
       String pays = getNomPays(tableCommunes.getString(rang, 1));
       float lat = tableCommunes.getFloat(rang, 2);
